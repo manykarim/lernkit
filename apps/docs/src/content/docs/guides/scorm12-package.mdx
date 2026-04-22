@@ -1,0 +1,91 @@
+---
+title: Build a SCORM 1.2 package
+description: Produce an LMS-importable SCORM 1.2 zip from the sample course.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+Phase 1 ships the first Lernkit packager: **SCORM 1.2**. This page walks through packaging the built Astro site as a SCORM 1.2 zip and what ends up inside.
+
+## Run it
+
+<Steps>
+
+1. **Build the docs site.**
+
+   ```bash
+   pnpm --filter=@lernkit/docs build
+   ```
+
+2. **Package as SCORM 1.2.**
+
+   ```bash
+   pnpm --filter=@lernkit/docs package:scorm12
+   ```
+
+   Or combined (builds first, then packages):
+
+   ```bash
+   pnpm build:scorm12
+   ```
+
+3. **Verify the zip.**
+
+   ```bash
+   ZIP=apps/docs/dist-packages/scorm12/lernkit-sample-course-0.0.0-scorm12.zip
+   unzip -l "$ZIP"
+   unzip -tq "$ZIP" && echo "zip integrity OK"
+   ```
+
+</Steps>
+
+## What's in the zip
+
+```
+lernkit-sample-course-0.0.0-scorm12.zip
+├── imsmanifest.xml                        ← at zip root
+├── lernkit-runtime/scorm12.js             ← in-browser SCORM API bridge
+├── _astro/*.css, *.js                      ← shared bundle
+└── course/<lesson-id>/index.html          ← one HTML per SCO
+```
+
+The manifest declares `<schema>ADL SCORM</schema>` with `<schemaversion>1.2</schemaversion>` and the three required XML namespaces (`imscp_rootv1p1p2`, `adlcp_rootv1p2`, `imsmd_rootv1p2p1`). Every lesson is an `adlcp:scormtype="sco"` resource listing every file it depends on.
+
+## LMS import
+
+At Phase 1 the zip is structurally conformant but has not yet been round-tripped through a real LMS. Known testing targets for Phase 1 exit (per the implementation plan):
+
+- **SCORM Cloud** (free tier) — the Rustici reference LMS.
+- **Moodle 4.3+**
+- **TalentLMS** (SCORM 1.2 only — per research §3.3).
+
+The conformance CI lands in Phase 3 once the xAPI proxy and SCORM Cloud credential wiring are in place. Until then, the zip is ready for manual upload testing.
+
+## Common import-failure causes we've already ruled out
+
+The packager enforces the research §3.2 checklist:
+
+- `imsmanifest.xml` at the zip root (not under a wrapper directory).
+- No `__MACOSX/` artefacts.
+- No `.DS_Store`, `Thumbs.db`, `.directory`.
+- ASCII kebab-case entries for LMS-zip-extractor compatibility.
+
+If your LMS still rejects the package, first things to check:
+
+1. `unzip -l` the zip and confirm `imsmanifest.xml` appears at the top — not under a nested folder.
+2. Confirm your LMS actually accepts SCORM 1.2. Some newer-LMS tiers are cmi5-only (cmi5 ships in Phase 3).
+3. Check the LMS import log for the specific rejection message — most LMSes log the first schema-validation failure.
+
+## What Phase 1 does not yet do
+
+- **Real SCORM Cloud CI round-trip** — batched with OQ-P0-12 (the scorm-again legal memo).
+- **Pyodide-runnable code** — Phase 2.
+- **cmi5 and SCORM 2004 packagers** — Phase 3.
+- **PDF export** — Phase 2.
+- **Full Tier 1 interaction vocabulary** (matching, sequencing, drag-drop, etc.) — Phase 1+ work.
+
+## Reference
+
+- [`@lernkit/packagers` README](https://github.com/manykarim/lernkit/blob/main/packages/packagers/README.md) — full API and configuration.
+- [ADR 0015](https://github.com/manykarim/lernkit/blob/main/docs/adr/0015-one-source-many-outputs-build-pipeline.md) — the build pipeline decision this implements.
+- Research §3.2 — SCORM 1.2 conformance landmines.

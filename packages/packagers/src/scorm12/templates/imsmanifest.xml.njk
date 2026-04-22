@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest
+    identifier="{{ manifestIdentifier }}"
+    version="{{ courseVersion }}"
+    xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+    xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+    xmlns:imsmd="http://www.imsglobal.org/xsd/imsmd_rootv1p2p1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                        http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd
+                        http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+    <imsmd:lom>
+      <imsmd:general>
+        <imsmd:title>
+          <imsmd:langstring xml:lang="{{ language }}">{{ courseTitle }}</imsmd:langstring>
+        </imsmd:title>
+        {% if courseDescription %}
+        <imsmd:description>
+          <imsmd:langstring xml:lang="{{ language }}">{{ courseDescription }}</imsmd:langstring>
+        </imsmd:description>
+        {% endif %}
+        <imsmd:language>{{ language }}</imsmd:language>
+      </imsmd:general>
+    </imsmd:lom>
+  </metadata>
+
+  <organizations default="{{ defaultOrganizationIdentifier }}">
+    <organization identifier="{{ organizationIdentifier }}" structure="hierarchical">
+      <title>{{ organizationTitle }}</title>
+      {% for lesson in lessons %}
+      <item identifier="item-{{ loop.index }}" identifierref="{{ lesson.identifier }}" isvisible="true">
+        <title>{{ lesson.title }}</title>
+        {% if masteryScorePercent %}
+        <adlcp:masteryscore>{{ masteryScorePercent }}</adlcp:masteryscore>
+        {% endif %}
+      </item>
+      {% endfor %}
+    </organization>
+  </organizations>
+
+  <resources>
+    {% for lesson in lessons %}
+    <resource identifier="{{ lesson.identifier }}" type="webcontent" adlcp:scormtype="sco" href="{{ lesson.href }}">
+      {% for file in lesson.files %}
+      <file href="{{ file }}"/>
+      {% endfor %}
+    </resource>
+    {% endfor %}
+  </resources>
+</manifest>

@@ -9,7 +9,9 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "typecheck": "astro check",
-    "clean": "rm -rf dist .astro"
+    "clean": "rm -rf dist .astro dist-packages",
+    "package:scorm12": "node scripts/package-scorm12.mjs",
+    "build:scorm12": "pnpm build && pnpm package:scorm12"
   },
   "dependencies": {
     "@astrojs/check": "0.9.4",
@@ -19,6 +21,7 @@
   },
   "devDependencies": {
     "@lernkit/config": "workspace:*",
+    "@lernkit/packagers": "workspace:*",
     "@lernkit/tracker": "workspace:*",
     "typescript": "5.7.2"
   }

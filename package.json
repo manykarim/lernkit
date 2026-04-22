@@ -12,6 +12,7 @@
   },
   "scripts": {
     "build": "turbo run build",
+    "build:scorm12": "pnpm --filter=@lernkit/docs build:scorm12",
     "dev": "turbo run dev --parallel",
     "test": "turbo run test",
     "lint": "biome check .",

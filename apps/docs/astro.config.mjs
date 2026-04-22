@@ -18,6 +18,7 @@ export default defineConfig({
           items: [
             { label: 'Welcome', slug: 'index' },
             { label: 'Quickstart', slug: 'guides/quickstart' },
+            { label: 'Build a SCORM 1.2 package', slug: 'guides/scorm12-package' },
           ],
         },
         {

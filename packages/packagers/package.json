@@ -1,0 +1,41 @@
+{
+  "name": "@lernkit/packagers",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Standards packagers for Lernkit. Phase 1 ships SCORM 1.2; cmi5, SCORM 2004, xAPI bundle, and plain-HTML follow in later phases (ADR 0015).",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./scorm12": {
+      "types": "./dist/scorm12/index.d.ts",
+      "import": "./dist/scorm12/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node scripts/copy-assets.mjs",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "jszip": "3.10.1",
+    "nunjucks": "3.2.4"
+  },
+  "devDependencies": {
+    "@lernkit/config": "workspace:*",
+    "@lernkit/tracker": "workspace:*",
+    "@types/node": "22.10.5",
+    "@types/nunjucks": "3.2.6",
+    "typescript": "5.7.2",
+    "vitest": "2.1.8"
+  }
+}

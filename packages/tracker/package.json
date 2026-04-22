@@ -15,6 +15,10 @@
     "./adapters/noop": {
       "types": "./dist/adapters/noop.d.ts",
       "import": "./dist/adapters/noop.js"
+    },
+    "./adapters/scorm12": {
+      "types": "./dist/adapters/scorm12.d.ts",
+      "import": "./dist/adapters/scorm12.js"
     }
   },
   "files": ["dist", "README.md"],

@@ -6,7 +6,19 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": ["node_modules", "dist", ".astro", ".turbo", "coverage", "pnpm-lock.yaml", "apps/api/**", "docs/**"]
+    "ignore": [
+      "**/node_modules",
+      "**/dist",
+      "**/dist-packages",
+      "**/.astro",
+      "**/.turbo",
+      "**/coverage",
+      "pnpm-lock.yaml",
+      "apps/api/**",
+      "docs/**",
+      "packages/packagers/src/scorm12/assets/**",
+      "packages/packagers/src/scorm12/schemas/**"
+    ]
   },
   "formatter": {
     "enabled": true,

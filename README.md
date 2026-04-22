@@ -6,7 +6,11 @@ Lernkit is an **OSS single-tenant framework** (per [ADR 0022](./docs/adr/0022-os
 
 ## Status
 
-**Phase 0 — Foundation.** Monorepo scaffold, CI, local dev environment. No SCORM packaging yet; that lands in Phase 1. See [`docs/plan/02-phase-plan.md`](./docs/plan/02-phase-plan.md).
+**Phase 0 complete. Phase 1 in progress — SCORM 1.2 packager landed.**
+
+- `pnpm build:scorm12` now produces a structurally-conformant SCORM 1.2 zip from the sample course.
+- `LernkitScorm12Adapter` implements the unified Tracker interface (ADR 0004) against the bundled in-browser runtime.
+- Full Phase 1 completion (real LMS round-trips, Tier 1 widget library, xAPI stub) is ongoing — see [`docs/plan/02-phase-plan.md`](./docs/plan/02-phase-plan.md).
 
 ## Repository layout
 
@@ -15,7 +19,8 @@ apps/
   docs/        Astro 5 + Starlight site + sample course (MDX)
   api/         FastAPI backend — code-execution control plane skeleton
 packages/
-  tracker/     Unified Tracker interface (ADR 0004); NoopAdapter only in P0
+  tracker/     Unified Tracker interface (ADR 0004) + NoopAdapter + LernkitScorm12Adapter
+  packagers/   SCORM 1.2 packager (Phase 1); cmi5 / 2004 / xAPI follow (ADR 0015)
   config/      Shared tsconfig and lint presets
 infra/
   docker/      Dockerfiles for the app + api
@@ -58,6 +63,16 @@ pnpm lint           # Biome
 pnpm typecheck      # tsc --noEmit across packages
 pnpm test           # Vitest (packages) + Pytest (api, via make)
 pnpm build          # turbo build (Astro + TS)
+pnpm build:scorm12  # build Astro + produce SCORM 1.2 zip in apps/docs/dist-packages/
+```
+
+After `pnpm build:scorm12`, inspect the zip:
+
+```bash
+ZIP=apps/docs/dist-packages/scorm12/lernkit-sample-course-0.0.0-scorm12.zip
+unzip -l "$ZIP"                          # list entries
+unzip -p "$ZIP" imsmanifest.xml | head   # manifest head
+unzip -tq "$ZIP" && echo "zip OK"        # integrity
 ```
 
 ## Documentation

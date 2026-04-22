@@ -1,5 +1,6 @@
 # Build output
 dist/
+dist-packages/
 .astro/
 .turbo/
 build/
