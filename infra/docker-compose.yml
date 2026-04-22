@@ -1,0 +1,85 @@
+# Lernkit local-dev stack.
+#
+# Phase 0 brings up the infra the application depends on (Postgres, Redis) plus
+# GlitchTip (self-hosted error tracking per ADR 0021). LRS and runner pool land
+# in later phases.
+#
+# Usage:
+#   cp .env.example .env
+#   docker compose -f infra/docker-compose.yml up -d
+#   docker compose -f infra/docker-compose.yml logs -f
+
+name: lernkit-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lernkit}
+      POSTGRES_USER: ${POSTGRES_USER:-lernkit}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lernkit_dev_only}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lernkit} -d ${POSTGRES_DB:-lernkit}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # GlitchTip is introduced in Phase 1 alongside the first error-producing code.
+  # Defined here behind a profile so `docker compose up` in Phase 0 skips it.
+  glitchtip:
+    profiles: ["error-tracking"]
+    image: glitchtip/glitchtip:v4.2
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-lernkit}:${POSTGRES_PASSWORD:-lernkit_dev_only}@postgres:5432/glitchtip
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-change-me-dev-only}
+      PORT: "8000"
+      EMAIL_URL: consolemail://
+      GLITCHTIP_DOMAIN: http://localhost:8001
+      DEFAULT_FROM_EMAIL: noreply@lernkit.local
+      CELERY_WORKER_AUTOSCALE: "1,3"
+    ports:
+      - "8001:8000"
+
+  glitchtip-worker:
+    profiles: ["error-tracking"]
+    image: glitchtip/glitchtip:v4.2
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-lernkit}:${POSTGRES_PASSWORD:-lernkit_dev_only}@postgres:5432/glitchtip
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-change-me-dev-only}
+      EMAIL_URL: consolemail://
+    command: ["./bin/run-celery-with-beat.sh"]
+
+volumes:
+  postgres_data:
+  redis_data:

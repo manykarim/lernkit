@@ -1,0 +1,142 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  js:
+    name: js (lint + typecheck + test + build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.11.0
+
+      - name: Enable pnpm via corepack
+        run: |
+          corepack enable pnpm
+          corepack prepare pnpm@9.15.0 --activate
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.11.0
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  python:
+    name: python (ruff + mypy + pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: 0.9.26
+
+      - name: Install Python 3.13
+        run: uv python install 3.13
+
+      - name: Sync deps
+        run: uv sync --extra dev
+
+      - name: Ruff check
+        run: uv run ruff check
+
+      - name: Ruff format check
+        run: uv run ruff format --check
+
+      - name: Mypy
+        run: uv run mypy src
+
+      - name: Pytest
+        run: uv run pytest
+
+  docker:
+    name: docker build (api + docs)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [js, python]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/api.Dockerfile
+          push: false
+          tags: lernkit-api:ci
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
+
+      - name: Build docs image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/docs.Dockerfile
+          push: false
+          tags: lernkit-docs:ci
+          cache-from: type=gha,scope=docs
+          cache-to: type=gha,scope=docs,mode=max
+
+  licence-scan:
+    name: licence allow-list (JS)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable pnpm via corepack
+        run: |
+          corepack enable pnpm
+          corepack prepare pnpm@9.15.0 --activate
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.11.0
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: License allow-list (fails on non-permissive)
+        run: |
+          pnpm dlx license-checker-rseidelsohn \
+            --onlyAllow "MIT;ISC;Apache-2.0;BSD-3-Clause;BSD-2-Clause;CC0-1.0;0BSD;MPL-2.0;Unlicense;Python-2.0;BlueOak-1.0.0;CC-BY-4.0" \
+            --summary \
+            --excludePrivatePackages \
+            --production

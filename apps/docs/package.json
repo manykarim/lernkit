@@ -1,0 +1,25 @@
+{
+  "name": "@lernkit/docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --host",
+    "start": "astro dev --host",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check",
+    "clean": "rm -rf dist .astro"
+  },
+  "dependencies": {
+    "@astrojs/check": "0.9.4",
+    "@astrojs/starlight": "0.30.6",
+    "astro": "5.1.1",
+    "sharp": "0.33.5"
+  },
+  "devDependencies": {
+    "@lernkit/config": "workspace:*",
+    "@lernkit/tracker": "workspace:*",
+    "typescript": "5.7.2"
+  }
+}

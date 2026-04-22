@@ -1,0 +1,67 @@
+---
+title: Quickstart
+description: Stand up a Lernkit dev environment locally in five commands.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+This page walks through the Phase 0 local-dev path. You will end with an Astro site rendering and a FastAPI health endpoint responding.
+
+## Prerequisites
+
+- Node.js **22.11.0+** (corepack ships with it; run `corepack enable pnpm`).
+- Python **3.12+** (3.13 preferred) with [`uv`](https://docs.astral.sh/uv/) installed.
+- Docker **28+** with Compose v2.
+
+## Setup
+
+<Steps>
+
+1. **Clone the repo.**
+
+   ```bash
+   git clone https://github.com/manykarim/lernkit.git
+   cd lernkit
+   ```
+
+2. **Install JS dependencies.**
+
+   ```bash
+   corepack enable pnpm
+   pnpm install
+   ```
+
+3. **Install Python dependencies.**
+
+   ```bash
+   cd apps/api && uv sync && cd ../..
+   ```
+
+4. **Start infra services (Postgres + Redis, and optionally the LRS).**
+
+   ```bash
+   cp .env.example .env
+   docker compose -f infra/docker-compose.yml up -d
+   ```
+
+5. **Run the dev servers.**
+
+   ```bash
+   pnpm dev
+   ```
+
+   The Astro site is at `http://localhost:4321`. The FastAPI health check is at `http://localhost:8000/health`.
+
+</Steps>
+
+## What happens next
+
+You can edit MDX files under `apps/docs/src/content/docs/` and the Astro dev server hot-reloads. Running `pnpm build` produces a static HTML build in `apps/docs/dist/`.
+
+Phase 1 will introduce the first packager (SCORM 1.2) that wraps this static build into an LMS-importable zip. Until then, this is a static docs site with the Lernkit skeleton in place.
+
+## Troubleshooting
+
+- **`pnpm: command not found`** — run `corepack enable pnpm`. Node 22+ ships with corepack; older versions do not.
+- **`uv: command not found`** — install via `curl -LsSf https://astral.sh/uv/install.sh | sh` or your package manager.
+- **Port in use** — `docker compose down` and re-run, or override ports in `.env`.

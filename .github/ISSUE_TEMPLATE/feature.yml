@@ -1,0 +1,35 @@
+name: Feature request
+description: Propose a new feature or enhancement.
+title: "[Feature] "
+labels: ["feature", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: please skim [`docs/plan/PRODUCT-SHAPE.md`](../../docs/plan/PRODUCT-SHAPE.md)
+        and [ADR 0022](../../docs/adr/0022-oss-single-tenant-framework-scope.md).
+        Hosted SaaS, multi-tenant, billing, and marketplace features are **out of scope**.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem does this feature solve? Who benefits?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope fit (ADR 0022)
+      description: Confirm this fits the OSS single-tenant scope.
+    validations:
+      required: true

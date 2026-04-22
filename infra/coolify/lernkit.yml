@@ -1,0 +1,102 @@
+# Coolify production manifest for the Lernkit stack.
+#
+# Consumed by Coolify v4's "Docker Compose" resource type. Traefik (Coolify's
+# built-in proxy) terminates TLS and routes public traffic by hostname label.
+#
+# Phase 0: docs + api + postgres + redis + glitchtip. LRS and runner pool are
+# added in later phases.
+
+name: lernkit
+
+services:
+  docs:
+    build:
+      context: ../..
+      dockerfile: infra/docker/docs.Dockerfile
+    restart: unless-stopped
+    environment:
+      SITE_URL: ${SITE_URL:-https://docs.example.com}
+    labels:
+      - "coolify.managed=true"
+      - "traefik.enable=true"
+      - "traefik.http.routers.lernkit-docs.rule=Host(`${DOCS_HOSTNAME}`)"
+      - "traefik.http.routers.lernkit-docs.entrypoints=websecure"
+      - "traefik.http.routers.lernkit-docs.tls.certresolver=letsencrypt"
+      - "traefik.http.services.lernkit-docs.loadbalancer.server.port=80"
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/api.Dockerfile
+    restart: unless-stopped
+    environment:
+      LERNKIT_ENV: production
+      LERNKIT_LOG_LEVEL: ${LOG_LEVEL:-info}
+      API_HOST: 0.0.0.0
+      API_PORT: "8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    labels:
+      - "coolify.managed=true"
+      - "traefik.enable=true"
+      - "traefik.http.routers.lernkit-api.rule=Host(`${API_HOSTNAME}`)"
+      - "traefik.http.routers.lernkit-api.entrypoints=websecure"
+      - "traefik.http.routers.lernkit-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.lernkit-api.loadbalancer.server.port=8000"
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  glitchtip:
+    image: glitchtip/glitchtip:v4.2
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/glitchtip
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY}
+      GLITCHTIP_DOMAIN: https://${GLITCHTIP_HOSTNAME}
+      DEFAULT_FROM_EMAIL: ${GLITCHTIP_FROM_EMAIL}
+      EMAIL_URL: ${GLITCHTIP_EMAIL_URL}
+      CELERY_WORKER_AUTOSCALE: "1,3"
+    labels:
+      - "coolify.managed=true"
+      - "traefik.enable=true"
+      - "traefik.http.routers.lernkit-errors.rule=Host(`${GLITCHTIP_HOSTNAME}`)"
+      - "traefik.http.routers.lernkit-errors.entrypoints=websecure"
+      - "traefik.http.routers.lernkit-errors.tls.certresolver=letsencrypt"
+      - "traefik.http.services.lernkit-errors.loadbalancer.server.port=8000"
+
+volumes:
+  postgres_data:
+  redis_data:

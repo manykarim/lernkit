@@ -1,0 +1,75 @@
+[project]
+name = "lernkit-api"
+version = "0.0.0"
+description = "Lernkit FastAPI backend — code-execution control plane skeleton."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "The Lernkit contributors" }]
+dependencies = [
+    "fastapi>=0.115.0,<0.116",
+    "uvicorn[standard]>=0.34.0,<0.35",
+    "pydantic>=2.10.0,<3.0",
+    "pydantic-settings>=2.7.0,<3.0",
+    "structlog>=24.4.0,<25.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0,<9.0",
+    "pytest-asyncio>=0.25.0,<0.26",
+    "httpx>=0.28.0,<0.29",
+    "ruff>=0.8.0,<0.9",
+    "mypy>=1.13.0,<2.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lernkit_api"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+extend-exclude = [".venv", "dist"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle
+    "W",   # pycodestyle
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "S",   # flake8-bandit
+    "ASYNC",
+    "RUF",
+]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S106"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_reexport = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra -q --strict-markers"

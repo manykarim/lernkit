@@ -1,0 +1,14 @@
+/* Lernkit theme tweaks. Light touch — lean on Starlight defaults. */
+
+:root {
+  --sl-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Tag runnable-code blocks in future phases. Phase 0 defines the hook only. */
+:root[data-theme='dark'] {
+  --lernkit-runnable-border: rgba(124, 181, 236, 0.4);
+}
+:root[data-theme='light'] {
+  --lernkit-runnable-border: rgba(44, 82, 130, 0.4);
+}

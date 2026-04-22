@@ -1,0 +1,30 @@
+---
+title: Welcome to Lernkit
+description: Code-first authoring for technical training.
+template: splash
+hero:
+  tagline: Write MDX. Ship SCORM. Run real code in lessons.
+  actions:
+    - text: Quickstart
+      link: /guides/quickstart/
+      icon: right-arrow
+      variant: primary
+    - text: Sample course
+      link: /course/welcome/
+      icon: document
+---
+
+Lernkit is an **OSS single-tenant framework** for authoring technical-training courses. Author in MDX or Markdoc, export conformant SCORM 1.2 / SCORM 2004 4th / cmi5 / xAPI packages, and embed runnable code (Python, JavaScript, Robot Framework) as a first-class lesson primitive.
+
+## Phase 0 — what works today
+
+- Monorepo scaffold (Turborepo + pnpm)
+- Astro + Starlight site with a sample course
+- FastAPI backend skeleton with `/health` and `/version`
+- `Tracker` interface stub with a no-op adapter
+- docker-compose local-dev stack
+- CI pipeline (lint, typecheck, test, build)
+
+## What lands next
+
+Packagers, quiz components, runnable Python via Pyodide, PDF export, LMS conformance — see the phased plan in `docs/plan/02-phase-plan.md`.

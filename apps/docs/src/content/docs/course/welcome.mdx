@@ -1,0 +1,51 @@
+---
+title: Welcome to Lernkit
+description: A one-page sample course lesson demonstrating the MDX authoring shape.
+objectives:
+  - Describe what Lernkit is and what it is not
+  - Identify the three places where runnable code will appear in future phases
+estimatedMinutes: 5
+---
+
+## What this lesson covers
+
+This is a **sample lesson** — a single MDX file under `src/content/docs/course/`. In Phase 0 it is rendered as a plain Starlight page. In Phase 1 the same file will be packaged into a SCORM 1.2 zip that imports into Moodle, TalentLMS, and SCORM Cloud.
+
+## How Lernkit lessons are written
+
+Lessons are authored in **MDX** (developer-authored, full React-component power) or **Markdoc** (author-safe, schema-validated). See [ADR 0016](https://github.com/manykarim/lernkit/blob/main/docs/adr/0016-embed-h5p-via-h5p-standalone-for-long-tail-content.md).
+
+```python title="hello.py"
+# Phase 2 will make this runnable via Pyodide in a Web Worker.
+# In Phase 0 this is a static syntax-highlighted snippet.
+
+def greet(name: str) -> str:
+    return f"Hello, {name}"
+
+print(greet("Lernkit"))
+```
+
+## Runnable code, three places
+
+Lernkit treats **executable code in lessons as a first-class primitive** — the market gap the research identified. Code runs in three places:
+
+1. **Pyodide in the browser** — Python, scientific libraries, matplotlib, under a Web Worker. Phase 2.
+2. **Sandpack in the browser** — React / Vue / Svelte component demos. Phase 3.
+3. **FastAPI + Docker + gVisor, server-side** — for lessons that need Node.js, a shell, or Robot Framework. Phase 3.
+
+Robot Framework specifically reuses [rf-mcp](https://github.com/manykarim/rf-mcp) as the runner base image.
+
+## Standards, four outputs
+
+From the same MDX source, Lernkit produces:
+
+- **SCORM 1.2** — universal LMS support
+- **SCORM 2004 4th Ed** — for LMSes that need sequencing
+- **cmi5** — modern xAPI profile with LMS launch
+- **xAPI bundle** — for LRS-direct reporting
+
+Plus **plain HTML** (opt-in public deploy) and **PDF** (Paged.js + Chromium).
+
+## What to do next
+
+Continue to [Your first runnable cell](/course/hello-runnable/) — a placeholder lesson for the Pyodide integration that lands in Phase 2.
