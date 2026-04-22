@@ -78,9 +78,6 @@ importers:
 
   packages/tracker:
     devDependencies:
-      '@lernkit/config':
-        specifier: workspace:*
-        version: link:../config
       typescript:
         specifier: 5.7.2
         version: 5.7.2
