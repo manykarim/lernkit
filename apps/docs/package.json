@@ -14,10 +14,10 @@
     "build:scorm12": "pnpm build && pnpm package:scorm12"
   },
   "dependencies": {
-    "@astrojs/check": "0.9.4",
-    "@astrojs/starlight": "0.30.6",
+    "@astrojs/check": "0.9.8",
+    "@astrojs/starlight": "0.38.3",
     "astro": "5.1.1",
-    "sharp": "0.33.5"
+    "sharp": "0.34.5"
   },
   "devDependencies": {
     "@lernkit/config": "workspace:*",
