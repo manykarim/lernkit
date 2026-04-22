@@ -1,9 +1,19 @@
 {
   "name": "@lernkit/tracker",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.0.1",
   "description": "Unified Tracker interface for SCORM / cmi5 / xAPI with pluggable adapters (ADR 0004).",
+  "keywords": ["scorm", "scorm12", "xapi", "cmi5", "lms", "e-learning", "tracker", "lernkit"],
   "license": "MIT",
+  "author": "The Lernkit contributors",
+  "homepage": "https://github.com/manykarim/lernkit#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manykarim/lernkit.git",
+    "directory": "packages/tracker"
+  },
+  "bugs": {
+    "url": "https://github.com/manykarim/lernkit/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,17 +31,21 @@
       "import": "./dist/adapters/scorm12.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": ["dist", "README.md", "LICENSE"],
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepack": "pnpm build"
   },
   "devDependencies": {
-    "@lernkit/config": "workspace:*",
     "typescript": "5.7.2",
     "vitest": "2.1.8"
   }
