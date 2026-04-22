@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "The Lernkit contributors" }]
 dependencies = [
-    "fastapi>=0.115.0,<0.116",
+    "fastapi>=0.115.0,<0.137",
     "uvicorn[standard]>=0.34.0,<0.35",
     "pydantic>=2.10.0,<3.0",
     "pydantic-settings>=2.7.0,<3.0",
