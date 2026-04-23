@@ -1,15 +1,15 @@
 {
-  "name": "@lernkit/tracker",
-  "version": "0.0.2",
-  "description": "Unified Tracker interface for SCORM / cmi5 / xAPI with pluggable adapters (ADR 0004).",
-  "keywords": ["scorm", "scorm12", "xapi", "cmi5", "lms", "e-learning", "tracker", "lernkit"],
+  "name": "@lernkit/components",
+  "version": "0.0.1",
+  "description": "React components for Lernkit courses — quiz widgets and runnable-code primitives (Phase 1+).",
+  "keywords": ["lernkit", "e-learning", "scorm", "xapi", "quiz", "mcq", "react", "astro-islands"],
   "license": "MIT",
   "author": "The Lernkit contributors",
   "homepage": "https://github.com/manykarim/lernkit#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/manykarim/lernkit.git",
-    "directory": "packages/tracker"
+    "directory": "packages/components"
   },
   "bugs": {
     "url": "https://github.com/manykarim/lernkit/issues"
@@ -22,17 +22,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./adapters/noop": {
-      "types": "./dist/adapters/noop.d.ts",
-      "import": "./dist/adapters/noop.js"
-    },
-    "./adapters/scorm12": {
-      "types": "./dist/adapters/scorm12.d.ts",
-      "import": "./dist/adapters/scorm12.js"
-    },
-    "./adapters/xapi-stub": {
-      "types": "./dist/adapters/xapi-stub.d.ts",
-      "import": "./dist/adapters/xapi-stub.js"
+    "./quiz": {
+      "types": "./dist/quiz/index.d.ts",
+      "import": "./dist/quiz/index.js"
     }
   },
   "files": ["dist", "README.md", "LICENSE"],
@@ -41,15 +33,27 @@
     "provenance": false
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.json --watch",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "clean": "rm -rf dist",
     "prepack": "pnpm build"
   },
+  "peerDependencies": {
+    "@lernkit/tracker": ">=0.0.1",
+    "react": ">=18.0.0 <20.0.0",
+    "react-dom": ">=18.0.0 <20.0.0"
+  },
   "devDependencies": {
+    "@lernkit/tracker": "workspace:*",
+    "@testing-library/react": "16.1.0",
+    "@types/react": "19.0.1",
+    "@types/react-dom": "19.0.2",
+    "happy-dom": "15.11.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
     "typescript": "5.7.2",
     "vitest": "2.1.8"
   }

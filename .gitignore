@@ -6,6 +6,9 @@ dist-packages/
 build/
 *.tsbuildinfo
 
+# Self-hosted Pyodide assets (copied from node_modules by apps/docs/scripts/copy-pyodide.mjs)
+apps/docs/public/pyodide/
+
 # Dependencies
 node_modules/
 .pnpm-store/

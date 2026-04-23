@@ -4,25 +4,35 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node scripts/copy-pyodide.mjs",
     "dev": "astro dev --host",
     "start": "astro dev --host",
+    "prebuild": "node scripts/copy-pyodide.mjs",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "typecheck": "astro check",
-    "clean": "rm -rf dist .astro dist-packages",
+    "clean": "rm -rf dist .astro dist-packages public/pyodide",
     "package:scorm12": "node scripts/package-scorm12.mjs",
     "build:scorm12": "pnpm build && pnpm package:scorm12"
   },
   "dependencies": {
     "@astrojs/check": "0.9.4",
+    "@astrojs/react": "4.3.1",
     "@astrojs/starlight": "0.30.6",
+    "@lernkit/components": "workspace:*",
+    "@lernkit/tracker": "workspace:*",
     "astro": "5.1.1",
+    "comlink": "^4.4.2",
+    "pyodide": "^0.29.3",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
     "sharp": "0.33.5"
   },
   "devDependencies": {
     "@lernkit/config": "workspace:*",
     "@lernkit/packagers": "workspace:*",
-    "@lernkit/tracker": "workspace:*",
+    "@types/react": "19.0.1",
+    "@types/react-dom": "19.0.2",
     "typescript": "5.7.2"
   }
 }

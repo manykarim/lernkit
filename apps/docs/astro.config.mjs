@@ -1,4 +1,5 @@
 // @ts-check
+import react from '@astrojs/react';
 import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
 
@@ -6,6 +7,7 @@ import { defineConfig } from 'astro/config';
 export default defineConfig({
   site: process.env.SITE_URL ?? 'http://localhost:4321',
   integrations: [
+    react(),
     starlight({
       title: 'Lernkit',
       description: 'Code-first authoring for technical training.',
@@ -26,6 +28,7 @@ export default defineConfig({
           items: [
             { label: 'Welcome to Lernkit', slug: 'course/welcome' },
             { label: 'Your first runnable cell', slug: 'course/hello-runnable' },
+            { label: 'Quiz demo', slug: 'course/quiz-demo' },
           ],
         },
         {

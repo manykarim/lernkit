@@ -1,0 +1,39 @@
+---
+title: Quiz demo
+description: A live <Quiz> with MCQ + TrueFalse, backed by the XapiStubAdapter so you can see the emitted xAPI statements.
+objectives:
+  - Observe a live Lernkit quiz with two question types
+  - Inspect the xAPI 2.0 statements the Tracker emits on Submit
+estimatedMinutes: 4
+---
+
+import PythonIntroQuiz from '@/components/PythonIntroQuiz.tsx';
+
+## Live quiz
+
+The quiz below hydrates as an Astro React island. It uses `<Quiz>`, `<MCQ>`, and `<TrueFalse>` from [`@lernkit/components`](https://www.npmjs.com/package/@lernkit/components), driven by an `XapiStubAdapter` from [`@lernkit/tracker`](https://www.npmjs.com/package/@lernkit/tracker).
+
+Answer the questions, hit **Submit**, then expand **xAPI statements emitted** to see the wire format.
+
+<PythonIntroQuiz client:visible />
+
+## What happens on Submit
+
+Each question's result flows through the Quiz → Tracker:
+
+- One `recordInteraction` call per question. The adapter emits an **`answered`** xAPI statement with `interactionType: "choice"` or `"true-false"`.
+- Once all questions are in, `setScore({ scaled: 0..1 })` — the adapter attaches this to the next completion/pass/fail statement rather than emitting a separate `scored`.
+- If the scaled score ≥ `passingScore`, the adapter emits **`completed`** (with `completion: true`) then **`passed`** (with `success: true`).
+- If below threshold, **`failed`** fires instead and `completed` is skipped.
+
+## What you are NOT seeing
+
+- No network traffic. `XapiStubAdapter` keeps statements in an in-memory queue for preview/inspection only.
+- No real LRS. In Phase 3 a sibling `XapiAdapter` will POST these statements to the FastAPI `/xapi` proxy, which forwards to the self-hosted LRS.
+- No SCORM tracking on this page. When the same Quiz component is packaged via `@lernkit/packagers` into a SCORM 1.2 zip, the tracker would be `LernkitScorm12Adapter` — identical domain-level calls, SCORM `cmi.*` writes on the wire.
+
+## Phase 1 limits still in force
+
+- Only `<MCQ>` and `<TrueFalse>` ship today. Fill-in-blank, matching, sequence, drag-drop, hotspot, short-answer etc. are next-slice work.
+- No `<QuestionBank>` (random draw) yet.
+- The xAPI statement IDs use a non-crypto UUID generator (fine for stubs, not cryptographically strong).

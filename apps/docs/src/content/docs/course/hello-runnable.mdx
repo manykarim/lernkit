@@ -1,30 +1,56 @@
 ---
 title: Your first runnable cell
-description: Placeholder for the Phase 2 Pyodide integration.
+description: A live Pyodide-backed Python cell running in your browser.
 objectives:
-  - Understand the phase ordering for runnable-code features
-estimatedMinutes: 2
+  - Run real Python code in the browser with no server round-trip
+  - Observe stdout, stderr, and exceptions for the same cell
+estimatedMinutes: 4
 ---
 
-## Phase 2 preview
+import RunnablePython from '@/components/pyodide/RunnablePython.tsx';
 
-In Phase 2 this page will render a `<RunnablePython>` component backed by Pyodide 0.29.x in a Web Worker. The code below will be executable in-browser:
+## Run some Python
+
+The cell below is a React island. The first click on **Run** boots Pyodide 0.29.3 in a Web Worker — expect a ~2–5 s warm-cache delay. Subsequent runs on the same page are fast.
+
+<RunnablePython
+  client:visible
+  caption="Try changing the numbers, then hit Run again."
+  initialCode={`import sys
+
+def squares(n):
+    return [i * i for i in range(n)]
+
+print(f"Python {sys.version_info.major}.{sys.version_info.minor} via Pyodide")
+print(squares(8))
+`}
+/>
+
+## What just happened
+
+- The component lazy-loads a Web Worker on first click (protects LCP on prose pages).
+- The worker dynamically imports **self-hosted** `pyodide.mjs` from `/pyodide/` (per [ADR 0006](https://github.com/manykarim/lernkit/blob/main/docs/adr/0006-pyodide-in-web-worker-for-in-browser-python.md) — never jsDelivr).
+- stdout and stderr are captured via Pyodide's `setStdout` / `setStderr` batched callbacks.
+- Uncaught exceptions surface as a formatted error panel, not a browser crash.
+
+## Try an error
 
 ```python
-import sys
+# This will raise — you'll see the type + message in the error panel.
+def divide(a, b):
+    return a / b
 
-print(f"Python {sys.version} running in Pyodide")
-print("State persists across cells in the same cellGroup.")
+print(divide(10, 0))
 ```
 
-For now it is a static snippet.
+Paste that into the editor above and run. The error panel shows the Python type and message.
 
-## How it will work (preview)
+## Phase 2 limits still in force
 
-- Pyodide loads lazily on first `▶ Run` click.
-- State persists within a `cellGroup` via a shared `py.globals` dict.
-- Outputs stream back via `postMessage`; stdout and stderr are distinguished.
-- Every execution emits an xAPI `executed-code` statement via the `Tracker` interface ([ADR 0004](https://github.com/manykarim/lernkit/blob/main/docs/adr/0004-unified-tracker-interface-with-pluggable-adapters.md)).
-- Source code is stored as a SHA-256 hash on intermediate runs; full source is kept only on terminal `passed` / `failed` events.
+- No `input()` yet — requires cross-origin isolation (COOP/COEP). Planned for a dedicated `/run/` route per [ADR 0019](https://github.com/manykarim/lernkit/blob/main/docs/adr/0019-scope-cross-origin-isolation-headers-to-runner-page.md).
+- No on-demand package loading (numpy, pandas, matplotlib). Pyodide's default `loadPackagesFromImports` would fetch wheels from the Pyodide CDN, which violates the self-host policy. A mirror arrives in Phase 3.
+- No persistent `cellGroups` across multiple `<RunnablePython>` cells on one page — each renders an isolated worker. Planned for Phase 2+.
+- No interrupt button. Runaway loops require a page reload for now.
+- No xAPI emit yet for the execution itself. Phase 3 wires `executed-code` / `passed` / `failed` statements for `<CodeChallenge>` (the autograded sibling of this widget).
 
-See [`docs/plan/02-phase-plan.md`](https://github.com/manykarim/lernkit/blob/main/docs/plan/02-phase-plan.md) for the full Phase 2 deliverables list.
+See [`docs/plan/02-phase-plan.md`](https://github.com/manykarim/lernkit/blob/main/docs/plan/02-phase-plan.md) for the full Phase 2 + Phase 3 scope.
