@@ -9,6 +9,7 @@ estimatedMinutes: 12
 ---
 
 import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import RunnableRobot from '@/components/rf/RunnableRobot.tsx';
 
 ## Install Robot Framework
 
@@ -82,6 +83,34 @@ Say Hello
     Log To Console    Hello, Robot Framework!
     Should Be Equal    ${1 + 1}    ${2}
 ```
+
+## Try it right here (no install required)
+
+The cell below runs Robot Framework **in your browser** via Pyodide — no server, no Python install needed. First click on **Run suite** boots Pyodide and installs the `robotframework` wheel from this site's own origin (per [ADR 0024](https://github.com/manykarim/lernkit/blob/main/docs/adr/0024-pyodide-rf-for-non-browser-lessons.md)) — expect a one-time ~15-30 s wait. Subsequent runs on this page are fast.
+
+<RunnableRobot
+  client:visible
+  fileName="first_test.robot"
+  caption="Edit the suite then hit Run — log.html is produced just like the CLI."
+  initialCode={`*** Settings ***
+Documentation    My very first Robot Framework test
+
+*** Test Cases ***
+Say Hello
+    Log    Hello, Robot Framework!
+    Should Be Equal    \${1 + 1}    \${2}
+
+Types Are Strings By Default
+    [Documentation]    Illustrates the string-by-default gotcha from Section 2.3.
+    VAR    \${weight: int}    8200
+    \${total}=    Evaluate    \${weight} + 1000
+    Should Be Equal As Integers    \${total}    9200
+`}
+/>
+
+<Aside type="note">
+  This in-browser runner covers pure-Python Robot Framework libraries — `BuiltIn`, `Collections`, `String`, `DateTime`, `OperatingSystem`, `XML`, `Process`. Lessons that need `SeleniumLibrary` or `Browser` (Playwright) use the server-side rf-mcp runner per [ADR 0009](https://github.com/manykarim/lernkit/blob/main/docs/adr/0009-reuse-rf-mcp-as-robot-framework-runner-base.md).
+</Aside>
 
 ## Run your first test
 

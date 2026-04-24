@@ -1,0 +1,186 @@
+import { useCallback, useMemo, useState, type ReactElement } from 'react';
+import { useRobotRunner } from './useRobotRunner.js';
+import type { RobotRunResult } from './rf.worker.js';
+
+export interface RunnableRobotProps {
+  /** Initial `.robot` source. Learner may edit before running. */
+  readonly initialCode: string;
+  /** File name inside the virtual FS. Defaults to `suite.robot`. */
+  readonly fileName?: string;
+  /** Optional caption rendered above the editor. */
+  readonly caption?: string;
+  /** Button label. Default: "Run suite". */
+  readonly runLabel?: string;
+}
+
+/**
+ * Browser-side Robot Framework cell (ADR 0024).
+ *
+ * Runs a `.robot` suite in Pyodide via the self-hosted `robotframework` wheel,
+ * then renders:
+ *  - console output (stdout/stderr combined)
+ *  - a stats pill (passed / failed / skipped)
+ *  - a toggle that renders `log.html` in a same-origin blob iframe
+ *
+ * MVP editor: styled `<textarea>` with tab-to-spaces handling. CodeMirror 6 +
+ * Lezer RF grammar lands in the next slice (per ADR 0010 / ADR 0024).
+ */
+export function RunnableRobot({
+  initialCode,
+  fileName = 'suite.robot',
+  caption,
+  runLabel = 'Run suite',
+}: RunnableRobotProps): ReactElement {
+  const { status, progress, run } = useRobotRunner();
+  const [code, setCode] = useState(initialCode);
+  const [result, setResult] = useState<RobotRunResult | null>(null);
+  const [showLog, setShowLog] = useState(false);
+
+  const logBlobUrl = useMemo<string | null>(() => {
+    if (!result?.artifacts.logHtml) return null;
+    const blob = new Blob([result.artifacts.logHtml], { type: 'text/html' });
+    return URL.createObjectURL(blob);
+  }, [result]);
+
+  // Revoke old blob URLs on re-run to avoid leaking memory.
+  useMemo(() => {
+    return () => {
+      if (logBlobUrl) URL.revokeObjectURL(logBlobUrl);
+    };
+  }, [logBlobUrl]);
+
+  const onRun = useCallback(async () => {
+    setResult(null);
+    setShowLog(false);
+    const r = await run({ [fileName]: code });
+    setResult(r);
+  }, [code, fileName, run]);
+
+  const onReset = useCallback(() => {
+    setCode(initialCode);
+    setResult(null);
+    setShowLog(false);
+  }, [initialCode]);
+
+  const onCodeKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const el = e.currentTarget;
+      const { selectionStart, selectionEnd, value } = el;
+      const next = `${value.slice(0, selectionStart)}    ${value.slice(selectionEnd)}`;
+      el.value = next;
+      el.selectionStart = el.selectionEnd = selectionStart + 4;
+      setCode(next);
+    }
+  }, []);
+
+  const busy = status === 'loading' || status === 'running';
+
+  return (
+    <div className="lernkit-runnable-robot" data-status={status}>
+      {caption ? <p className="lernkit-runnable-robot__caption">{caption}</p> : null}
+
+      <label className="lernkit-runnable-robot__editor-label" htmlFor="lernkit-rf-editor">
+        Robot Framework source ({fileName})
+      </label>
+      <textarea
+        id="lernkit-rf-editor"
+        className="lernkit-runnable-robot__editor"
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        onKeyDown={onCodeKeyDown}
+        spellCheck={false}
+        rows={Math.min(20, Math.max(6, code.split('\n').length))}
+        aria-label="Robot Framework source — edit then click Run"
+      />
+
+      <div className="lernkit-runnable-robot__toolbar">
+        <button
+          type="button"
+          className="lernkit-runnable-robot__run"
+          onClick={() => {
+            void onRun();
+          }}
+          disabled={busy}
+          data-testid="runnable-robot-run"
+        >
+          {status === 'loading'
+            ? progress?.message ?? 'Loading Robot Framework…'
+            : status === 'running'
+              ? 'Running…'
+              : `▶ ${runLabel}`}
+        </button>
+        <button
+          type="button"
+          className="lernkit-runnable-robot__reset"
+          onClick={onReset}
+          disabled={busy}
+        >
+          Reset
+        </button>
+        {result ? (
+          <span className="lernkit-runnable-robot__timing" aria-live="polite">
+            rc={result.returnCode} · {Math.round(result.elapsedMs)} ms
+          </span>
+        ) : null}
+      </div>
+
+      {status === 'loading' && progress ? (
+        <p className="lernkit-runnable-robot__progress" role="status">
+          {progress.message}
+        </p>
+      ) : null}
+
+      {result ? (
+        <>
+          <div
+            className="lernkit-runnable-robot__stats"
+            data-passed={result.passed}
+            role="status"
+          >
+            <strong>{result.passed ? '✓ All passed' : '✗ Failed'}</strong> ·{' '}
+            {result.stats.testsPassed} passed · {result.stats.testsFailed} failed ·{' '}
+            {result.stats.testsSkipped} skipped
+          </div>
+
+          {result.consoleOutput ? (
+            <pre className="lernkit-runnable-robot__console" aria-label="console output">
+              {result.consoleOutput}
+            </pre>
+          ) : null}
+
+          {result.error ? (
+            <div role="alert" className="lernkit-runnable-robot__error">
+              <strong>{result.error.type}:</strong> {result.error.message}
+              {result.error.traceback ? (
+                <pre className="lernkit-runnable-robot__traceback">{result.error.traceback}</pre>
+              ) : null}
+            </div>
+          ) : null}
+
+          {logBlobUrl ? (
+            <div className="lernkit-runnable-robot__artifacts">
+              <button
+                type="button"
+                className="lernkit-runnable-robot__toggle-log"
+                onClick={() => setShowLog((v) => !v)}
+              >
+                {showLog ? 'Hide log.html' : 'Show log.html'}
+              </button>
+              {showLog ? (
+                <iframe
+                  src={logBlobUrl}
+                  title="Robot Framework log.html"
+                  className="lernkit-runnable-robot__log-frame"
+                  sandbox="allow-same-origin"
+                />
+              ) : null}
+            </div>
+          ) : null}
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+export default RunnableRobot;
