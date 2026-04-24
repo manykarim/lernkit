@@ -9,6 +9,7 @@ estimatedMinutes: 8
 ---
 
 import { Aside } from '@astrojs/starlight/components';
+import RunnableRobot from '@/components/rf/RunnableRobot.tsx';
 
 A test without assertions isn't really a test — it's just a script. Assertions are the keywords that **check your expectations** and cause the test to fail if those expectations aren't met.
 
@@ -59,6 +60,29 @@ Related variants you'll occasionally need:
 - `Should Be Equal As Integers`
 - `Should Be Equal As Numbers` (handles floats)
 - `Should Be Equal As Strings`
+
+### Run the four-assertion tour
+
+<RunnableRobot
+  client:visible
+  fileName="assertions.robot"
+  caption="Every assertion shown above — all four variants, plus the type-aware escape hatch."
+  initialCode={`*** Test Cases ***
+Shipment Meets Requirements
+    VAR    \${origin}        Munich
+    VAR    \${weight: int}   8200
+    @{containers}    Create List    MRKU1234567    TCLU7654321
+
+    Should Be Equal      \${origin}         Munich
+    Should Be True       \${weight} < 25000
+    Should Contain       \${containers}     MRKU1234567
+    Length Should Be     \${containers}     2
+
+Type-Aware Equality
+    \${answer}=    Evaluate    100 + 23
+    Should Be Equal As Integers    \${answer}    123
+`}
+/>
 
 ## Negative assertions
 

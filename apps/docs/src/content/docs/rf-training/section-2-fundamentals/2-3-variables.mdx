@@ -10,6 +10,7 @@ estimatedMinutes: 12
 ---
 
 import { Aside } from '@astrojs/starlight/components';
+import RunnableRobot from '@/components/rf/RunnableRobot.tsx';
 
 Variables let you avoid repetition and write tests that are easier to read and maintain. Robot Framework has three variable types, distinguished by their prefix character:
 
@@ -71,6 +72,29 @@ VAR    ${weight: int}    8200
 ${total}    Evaluate    ${weight} + 1000
 Should Be Equal As Integers    ${total}    9200
 ```
+
+### See both sides of the gotcha
+
+<RunnableRobot
+  client:visible
+  fileName="variables.robot"
+  caption="Two tests demonstrating typed variables. Both pass — read the source to see why the typed version is needed."
+  initialCode={`*** Test Cases ***
+String-By-Default Is Sneaky
+    [Documentation]    Without a type hint \${weight} is the STRING "8200".
+    VAR    \${weight}    8200
+    Should Be Equal As Strings    \${weight}    8200
+    # Arithmetic through Evaluate forces a numeric context explicitly.
+    \${doubled}=    Evaluate    int(\${weight}) * 2
+    Should Be Equal As Integers    \${doubled}    16400
+
+Typed Variables Let You Skip The Cast
+    [Documentation]    The : int annotation makes \${weight} a real integer from the start.
+    VAR    \${weight: int}    8200
+    \${total}=    Evaluate    \${weight} + 1000
+    Should Be Equal As Integers    \${total}    9200
+`}
+/>
 
 Common types you'll use:
 

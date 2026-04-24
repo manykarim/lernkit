@@ -10,6 +10,7 @@ estimatedMinutes: 10
 ---
 
 import { Aside } from '@astrojs/starlight/components';
+import RunnableRobot from '@/components/rf/RunnableRobot.tsx';
 
 Robot Framework supports the control structures you'd expect from a modern programming language: conditionals, loops, and error handling. This chapter is a **brief tour** — just enough to recognise each one and write basic versions yourself. For the full range of options (WHILE loops, ELSE IF chains, BREAK/CONTINUE, pattern matching in EXCEPT, etc.), see the [Robot Framework User Guide](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html).
 
@@ -76,6 +77,41 @@ END
 <Aside type="tip">
   Everything above can be combined — loops inside conditionals, TRY inside loops, and so on. Robot Framework also supports `WHILE`, `BREAK`, `CONTINUE`, and `ELSE IF` chains, which are covered in the User Guide. You'll rarely need them for simple tests.
 </Aside>
+
+### Run all three control structures in one suite
+
+<RunnableRobot
+  client:visible
+  fileName="control_structures.robot"
+  caption="IF/ELSE, FOR (both IN and IN RANGE), and TRY/EXCEPT/FINALLY — one suite, three tests."
+  initialCode={`*** Test Cases ***
+Conditional Based On Weight
+    VAR    \${weight: int}    8200
+    IF    \${weight} > 25000
+        Log    Overweight — split the shipment
+    ELSE
+        Log    OK to load (\${weight} kg)
+    END
+
+Iterate Over Containers And Docks
+    @{containers}    Create List    MRKU1234567    TCLU7654321    MSKU9988776
+    FOR    \${container}    IN    @{containers}
+        Log    Inspecting \${container}
+    END
+    FOR    \${dock}    IN RANGE    1    4
+        Log    Dock \${dock} ready
+    END
+
+Try Except Continues After Failure
+    TRY
+        Fail    simulated failure
+    EXCEPT
+        Log    Caught the failure — test keeps going
+    FINALLY
+        Log    Cleanup step always runs
+    END
+`}
+/>
 
 ## Checklist
 

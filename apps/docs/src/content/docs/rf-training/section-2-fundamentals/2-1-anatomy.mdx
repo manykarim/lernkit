@@ -9,6 +9,7 @@ estimatedMinutes: 8
 ---
 
 import { Aside } from '@astrojs/starlight/components';
+import RunnableRobot from '@/components/rf/RunnableRobot.tsx';
 
 A Robot Framework test file is just a plain text file with the extension `.robot`. Inside it, content is organised into **sections**, each introduced by a header that starts and ends with `***`.
 
@@ -42,6 +43,30 @@ Greet Warehouse
 ```
 
 Notice how the test case `Welcome To Warehouse` calls the custom keyword `Greet Warehouse` — that's how the four sections fit together: settings configure the file, variables hold reusable values, the test case describes the scenario, and user-defined keywords keep the test readable.
+
+### Run the four-section skeleton
+
+<RunnableRobot
+  client:visible
+  fileName="anatomy.robot"
+  caption="All four sections, one test. Edit it, break it, see what RF complains about."
+  initialCode={`*** Settings ***
+Documentation    Minimal example of a Robot Framework test file.
+Library          Collections
+
+*** Variables ***
+\${WAREHOUSE}     Munich Distribution Center
+
+*** Test Cases ***
+Welcome To Warehouse
+    Greet Warehouse
+    Log    Shift is starting
+
+*** Keywords ***
+Greet Warehouse
+    Log    Hello, \${WAREHOUSE}!
+`}
+/>
 
 ## The two-space separator rule
 

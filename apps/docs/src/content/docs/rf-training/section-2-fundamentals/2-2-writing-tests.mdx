@@ -10,6 +10,7 @@ estimatedMinutes: 10
 ---
 
 import { Aside } from '@astrojs/starlight/components';
+import RunnableRobot from '@/components/rf/RunnableRobot.tsx';
 
 A test case in Robot Framework is simply a **name** followed by a list of **steps**. Each step is a call to a keyword, optionally with arguments.
 
@@ -57,6 +58,26 @@ Two built-in keywords will appear in almost every test you write:
 | `Log To Console` | Printed to the terminal immediately, visible as the test runs |
 
 Use `Log` for most diagnostic output — it keeps the terminal clean and makes the log file rich. Use `Log To Console` only when you specifically want to see something in real time while the test runs.
+
+### Run a test with Documentation and Tags
+
+<RunnableRobot
+  client:visible
+  fileName="warehouse.robot"
+  caption="Two tests in one file. After Run, open log.html to see the [Documentation] and [Tags] rendered on each test."
+  initialCode={`*** Test Cases ***
+Warehouse Arrival Is Logged
+    [Documentation]    Smoke test confirming arrival is recorded.
+    [Tags]             warehouse    smoke
+    Log                Shift started at Munich DC
+
+Container Weight Is Within Limit
+    [Documentation]    Verifies that containers do not exceed the vessel limit.
+    [Tags]             warehouse    weights
+    VAR    \${weight: int}    8200
+    Should Be True    \${weight} < 25000
+`}
+/>
 
 ## Running a single test vs. a whole file
 
