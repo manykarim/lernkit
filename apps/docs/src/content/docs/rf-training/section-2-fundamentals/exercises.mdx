@@ -1,0 +1,62 @@
+---
+title: "Hands-on exercises"
+description: Practise Section 2 on a realistic logistics scenario — Warehouse Welcome and Shipment Inspector.
+objectives:
+  - Write a complete `.robot` test using Log + VAR + Should Not Be Empty
+  - Build a dictionary, iterate over it, and branch on a boolean field
+estimatedMinutes: 20
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+These exercises give you a chance to practise what you've learnt on a realistic logistics scenario. Templates and solutions are available in the course repository.
+
+<Aside type="note">
+  Lernkit doesn\u2019t yet ship a native `<Exercise>` component. Each exercise below is rendered as a collapsible `<details>` block with the task list + keywords. A Phase-3 rf-mcp integration will turn these into runnable challenges with hidden-test auto-grading (see [ADR 0009](https://github.com/manykarim/lernkit/blob/main/docs/adr/0009-reuse-rf-mcp-as-robot-framework-runner-base.md)).
+</Aside>
+
+## Exercise 2.1 — Warehouse Welcome (★☆☆, ~5 min)
+
+You've arrived for your first shift at the Munich Distribution Center. Log your arrival and assert the message is correct.
+
+<details>
+<summary>Task</summary>
+
+1. Create a file `warehouse_welcome.robot`.
+2. Write a test case called `Log Warehouse Arrival`.
+3. Create a variable `${ARRIVAL_MSG}` with the text `"<your-name> reporting to Munich DC"`.
+4. Log the message to both the Robot log and the console.
+5. Assert that `${ARRIVAL_MSG}` is not empty.
+6. Run the test: `robot -d logs warehouse_welcome.robot`
+7. Open `logs/log.html` and verify your message appears.
+
+**Keywords to use:** `Log`, `Log To Console`, `VAR`, `Should Not Be Empty`
+
+</details>
+
+## Exercise 2.2 — Shipment Inspector (★★☆, ~10 min)
+
+A new shipment has arrived. Build a dictionary with its details, flag it if it's hazardous, and iterate over all its fields.
+
+<details>
+<summary>Task</summary>
+
+1. Create a file `shipment_inspector.robot`. Import the `Collections` library.
+2. Write a test case called `Inspect Shipment`.
+3. Build a dictionary `&{SHIPMENT}` with these keys:
+   - `origin` = `Munich`
+   - `destination` = `Amsterdam`
+   - `weight_kg` = `${8200}`
+   - `hazardous` = `${FALSE}`
+4. Assert the dictionary **contains** `origin` but does **not contain** `tracking_id`.
+5. Use an `IF` statement: if hazardous, log a warning; otherwise, log `"Standard cargo"`.
+6. Add `tracking_id=SHP-2026-0042` to the dictionary using `Set To Dictionary`.
+7. Loop over all key-value pairs with `FOR ${k} ${v} IN &{SHIPMENT}` and log each.
+
+**Keywords to use:** `Create Dictionary`, `Should Contain`, `Should Not Contain`, `Set To Dictionary`, `IF / ELSE / END`, `FOR / IN / END`
+
+</details>
+
+## Next
+
+[Section 2 review](../review/) — flipcards and a short quiz.

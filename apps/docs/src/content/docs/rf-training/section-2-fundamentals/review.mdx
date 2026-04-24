@@ -1,0 +1,43 @@
+---
+title: Section 2 review — flipcards + quiz
+description: Flashcard recap of Section 2 and a short quiz on the fundamentals.
+objectives:
+  - Recall the Section 2 terminology at a glance
+  - Score 70% or better on the quiz to signal mastery to the LMS
+estimatedMinutes: 8
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Section2ReviewQuiz from '@/components/rf-training/Section2ReviewQuiz.tsx';
+
+## Flipcards (self-study)
+
+<Aside type="note">
+  Rendered as a side-by-side table today. Interactive flip animation lands when `<Flipcards>` ships (see [GAPS](https://github.com/manykarim/lernkit/blob/main/docs/rf_training_files/GAPS.md)).
+</Aside>
+
+| Front | Back |
+|---|---|
+| `*** Settings ***` | Section for library imports, file-level documentation, and suite-level setup/teardown. |
+| `*** Test Cases ***` | Section that contains one or more test cases. Each test is a name followed by indented steps. |
+| Two-space separator | Keywords and their arguments (and arguments from each other) are separated by **at least two spaces**. One space is not enough. |
+| `[Documentation]` | A test-level setting that adds a description, shown in the log and report. Can span multiple lines using `...`. |
+| `[Tags]` | Labels attached to a test. Used with `--include` / `--exclude` to filter which tests to run. |
+| `VAR` | The modern keyword for declaring variables inline inside a test or keyword. Works with scalars, lists, and dictionaries. |
+| Scalar / List / Dict (`${x}` / `@{x}` / `&{x}`) | The three variable types, identified by prefix. `$` for a single value, `@` for a list, `&` for a dictionary. |
+| Typed Variable (`${x: int}`) | A variable declared with a type annotation so it isn\u2019t treated as a string. Common types: `int`, `float`, `bool`, `str`, `dict`. |
+| `${CURDIR}` | Built-in variable pointing to the folder the current `.robot` file lives in. Handy for loading test data files that sit next to your tests. |
+| `${OUTPUT_DIR}` | Built-in variable pointing to the folder where test artefacts (log, report, files created during the run) are written. Controlled via the `-d` CLI flag. |
+| Assertion | A keyword that checks an expectation and fails the test if the check doesn\u2019t hold. Most start with `Should...` \u2014 e.g. `Should Be Equal`, `Should Contain`. |
+| `Should Be Equal As Integers` | Numeric comparison that converts both sides to integers before comparing. Needed because plain `Should Be Equal` treats values as strings. |
+| `IF / ELSE / END` | Conditional block. The `END` is mandatory. An inline form exists for single-action conditions. |
+| `FOR / IN / END` | Loop over a list of values. Variants: `IN` (explicit list), `IN RANGE` (fixed count), `IN ENUMERATE` (index + value). |
+| `TRY / EXCEPT / END` | Error handling block. Catches keyword failures so the test can continue. Optional `FINALLY` runs in both success and failure cases. |
+
+## Quiz
+
+<Section2ReviewQuiz client:visible />
+
+## End of Section 2
+
+Section 3 — *File Operations* — is planned as follow-on material. It covers reading and writing plain text, XML, and JSON files using built-in libraries.

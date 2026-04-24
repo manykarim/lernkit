@@ -1,0 +1,51 @@
+---
+title: Section 1 review — flipcards + quiz
+description: Flashcard-style recap of Section 1 followed by a short quiz that reports its score to the Lernkit Tracker.
+objectives:
+  - Recall the key concepts from Section 1 at a glance
+  - Answer a short quiz correctly to signal section completion to the LMS
+estimatedMinutes: 8
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import Section1ReviewQuiz from '@/components/rf-training/Section1ReviewQuiz.tsx';
+
+## Flipcards (self-study)
+
+<Aside type="note">
+  This table is the Section 1 flipcard deck. Lernkit doesn\u2019t yet ship an interactive flipcard widget — the concepts are visible side-by-side for self-review. A `<Flipcards>` component is planned (see [GAPS](https://github.com/manykarim/lernkit/blob/main/docs/rf_training_files/GAPS.md)).
+</Aside>
+
+| Front | Back |
+|---|---|
+| Python | The programming language Robot Framework is built on. Install version 3.8 or higher (3.13+ recommended). |
+| pip | Python\u2019s package manager. Comes with Python by default. Used to install packages like Robot Framework. |
+| Virtual environment (`.venv`) | An isolated Python installation inside your project folder. Keeps one project\u2019s packages from interfering with another\u2019s. |
+| `python -m venv .venv` | Command to create a new virtual environment in the current folder. |
+| Activate | The step that makes `python` and `pip` inside a terminal point to the venv rather than the system Python. |
+| `uv` | A modern, fast Python project manager that handles Python installation, venv creation, and dependency management in a single tool. |
+| `uv add <package>` | Add a package to the project. Installs it into the project\u2019s venv and records it in `pyproject.toml` + `uv.lock`. |
+| `uv run <command>` | Run a command using the project\u2019s isolated environment, without manual activation. |
+| `pip install robotframework` | The command to install Robot Framework into your active virtual environment using pip. |
+| `robot --version` | Command to verify the Robot Framework installation and display the installed version. |
+| `.robot` | The standard file extension for Robot Framework test suite files. |
+| `*** Settings ***` | Section header used to import libraries, resource files, and define suite-level metadata. |
+| `*** Test Cases ***` | Section header that introduces one or more test cases in a `.robot` file. |
+| Keyword | A reusable action in Robot Framework, such as `Log To Console` or `Should Be Equal`. |
+| `log.html` / `report.html` | Auto-generated files after each test run — detailed log and high-level summary respectively. |
+| `requirements.txt` | A file listing your project\u2019s Python dependencies. Created with `pip freeze > requirements.txt`. |
+| RobotCode | The recommended VS Code extension for Robot Framework. Provides syntax highlighting, autocompletion, debugging, and Test Explorer integration. |
+| Python Interpreter | The specific Python executable VS Code uses to run your tests. Must point to the one inside your project\u2019s `.venv` folder. |
+| Test Explorer | VS Code\u2019s built-in Testing panel (flask icon). With RobotCode, lists all your Robot Framework tests and lets you run or debug them. |
+| Breakpoint | A marker set on a line of code that pauses test execution there, so you can inspect variables and step through the test. |
+| Robotidy | A code formatter for Robot Framework, built into RobotCode. Enforces consistent style across `.robot` files. |
+
+## Quiz
+
+Hit **Submit** once you\u2019ve answered everything. The scaled score plus each answer lands in the in-memory xAPI queue below — that\u2019s the wire format an LMS would see.
+
+<Section1ReviewQuiz client:visible />
+
+## Next
+
+Section 2 — [Robot Framework Fundamentals](/rf-training/section-2-fundamentals/).

@@ -1,0 +1,89 @@
+---
+title: "2.5 — Control structures (a brief tour)"
+description: IF / ELSE, FOR loops, and TRY / EXCEPT — just enough to recognise each and write basic versions.
+objectives:
+  - Write an `IF / ELSE / END` block (including the inline form)
+  - Write a `FOR` loop over a list and over a numeric range
+  - Catch a keyword failure with `TRY / EXCEPT` (and optionally `FINALLY`)
+  - Remember that every control structure closes with `END`
+estimatedMinutes: 10
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Robot Framework supports the control structures you'd expect from a modern programming language: conditionals, loops, and error handling. This chapter is a **brief tour** — just enough to recognise each one and write basic versions yourself. For the full range of options (WHILE loops, ELSE IF chains, BREAK/CONTINUE, pattern matching in EXCEPT, etc.), see the [Robot Framework User Guide](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html).
+
+## IF / ELSE
+
+Conditional logic uses `IF`, `ELSE`, and the mandatory `END`:
+
+```robot
+IF    ${weight} > 25000
+    Log    Overweight — split the shipment
+ELSE
+    Log    OK to load
+END
+```
+
+For a single short action, Robot Framework also supports an inline form:
+
+```robot
+IF    ${hazardous}    Log    Hazardous cargo
+```
+
+## FOR loops
+
+`FOR` iterates over a list of values. The syntax is `FOR ... IN ... END`:
+
+```robot
+FOR    ${container}    IN    @{containers}
+    Log    Inspecting ${container}
+END
+```
+
+For a fixed number of iterations, use `IN RANGE`:
+
+```robot
+FOR    ${dock}    IN RANGE    1    11
+    Log    Dock ${dock} ready
+END
+```
+
+## TRY / EXCEPT — error handling
+
+When a keyword fails, Robot Framework normally stops the test. `TRY / EXCEPT` lets you catch the failure and continue:
+
+```robot
+TRY
+    Parse Xml    broken.xml
+EXCEPT
+    Log    XML file was invalid — using defaults
+END
+```
+
+You can also add a `FINALLY` block that always runs (useful for cleanup):
+
+```robot
+TRY
+    Submit Customs Clearance
+EXCEPT
+    Log    Clearance failed — will retry later
+FINALLY
+    Log    Clearance attempt recorded in audit log
+END
+```
+
+<Aside type="tip">
+  Everything above can be combined — loops inside conditionals, TRY inside loops, and so on. Robot Framework also supports `WHILE`, `BREAK`, `CONTINUE`, and `ELSE IF` chains, which are covered in the User Guide. You'll rarely need them for simple tests.
+</Aside>
+
+## Checklist
+
+- You can write an `IF / ELSE / END` block
+- You can write a `FOR` loop over a list and over a range
+- You know how to catch a failure with `TRY / EXCEPT`
+- You know that all control structures require a closing `END`
+
+## Next
+
+[Hands-on exercises](../exercises/) — practise what you've learnt on a realistic logistics scenario.

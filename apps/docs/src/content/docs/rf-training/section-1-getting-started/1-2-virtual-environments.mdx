@@ -1,0 +1,70 @@
+---
+title: "1.2 — Virtual environments"
+description: Create and activate an isolated Python environment (.venv) for your Robot Framework project.
+objectives:
+  - Create a `.venv` inside a project folder
+  - Activate and deactivate the venv on Windows, macOS, and Linux
+  - Confirm the venv is the active Python installation
+estimatedMinutes: 8
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+A **virtual environment** (or *venv*) is an isolated Python installation that lives inside your project folder. It keeps the packages you install for one project from interfering with any other project — or with your system Python. This is considered a best practice for every Python project, and it's essential for Robot Framework projects where you'll often install many libraries.
+
+Without a venv, running `pip install robotframework` installs it globally. With a venv, the installation lives inside the venv's folder and disappears when you delete the folder.
+
+## Create a project folder and venv
+
+```bash
+mkdir my-rf-tests
+cd my-rf-tests
+python -m venv .venv
+```
+
+This creates a folder named `.venv` inside your project containing a self-contained Python installation.
+
+## Activate the virtual environment
+
+<Tabs syncKey="os">
+  <TabItem label="Windows (PowerShell)">
+    ```powershell
+    .venv\Scripts\Activate.ps1
+    ```
+  </TabItem>
+
+  <TabItem label="Windows (cmd.exe)">
+    ```bat
+    .venv\Scripts\activate.bat
+    ```
+  </TabItem>
+
+  <TabItem label="macOS / Linux">
+    ```bash
+    source .venv/bin/activate
+    ```
+  </TabItem>
+</Tabs>
+
+When activation succeeds, your terminal prompt gains a `(.venv)` prefix.
+
+## Confirm the venv is active
+
+Run `which python` (macOS/Linux) or `where python` (Windows) — the path should include your project's `.venv` folder. Also run `pip list` to see only a minimal set of packages, confirming isolation.
+
+<Aside type="tip">
+  To deactivate the venv later, just type `deactivate`. To use the venv again next time, simply re-run the activation command from your project folder.
+</Aside>
+
+## Checklist
+
+- A `.venv` folder exists inside your project folder
+- The virtual environment is activated (you see `(.venv)` in your prompt)
+- `pip list` shows only a handful of packages
+
+## Next
+
+Choose your path:
+
+- Modern, fast workflow? Continue to [1.3 — Optional: `uv` for dependency management](../1-3-uv/).
+- Happy with pip + venv? Skip to [1.4 — Installing Robot Framework](../1-4-installing-rf/).

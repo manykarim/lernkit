@@ -1,0 +1,154 @@
+---
+title: "1.4 — Installing Robot Framework"
+description: Install the framework, verify the version, write your first test, and open the logs.
+objectives:
+  - Install Robot Framework and verify `robot --version`
+  - Write and run your first `.robot` test
+  - Read `log.html` and `report.html`
+estimatedMinutes: 12
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Install Robot Framework
+
+<Tabs syncKey="pm">
+  <TabItem label="pip + venv">
+    Make sure your virtual environment is **activated**, then:
+
+    ```bash
+    pip install --upgrade pip
+    pip install robotframework
+    ```
+
+    Pin a version for team projects:
+
+    ```bash
+    pip install robotframework==7.4.2
+    ```
+  </TabItem>
+
+  <TabItem label="uv">
+    ```bash
+    uv add robotframework
+    ```
+
+    `uv` does the equivalent, no activation needed.
+  </TabItem>
+</Tabs>
+
+## Verify the installation
+
+<Tabs syncKey="pm">
+  <TabItem label="pip + venv">
+    ```bash
+    robot --version
+    ```
+  </TabItem>
+  <TabItem label="uv">
+    ```bash
+    uv run robot --version
+    ```
+  </TabItem>
+</Tabs>
+
+You should see something like:
+
+```
+Robot Framework 7.4.2 (Python 3.13.0 on win32)
+```
+
+## Freeze your dependencies (pip only)
+
+```bash
+pip freeze > requirements.txt
+pip install -r requirements.txt    # to reproduce elsewhere
+```
+
+<Aside type="note">
+  Using uv? Skip this — `uv.lock` handles it. Reproduce with `uv sync`.
+</Aside>
+
+## Create your first test
+
+Create a file called `first_test.robot`:
+
+```robot
+*** Settings ***
+Documentation    My very first Robot Framework test
+
+*** Test Cases ***
+Say Hello
+    Log To Console    Hello, Robot Framework!
+    Should Be Equal    ${1 + 1}    ${2}
+```
+
+## Run your first test
+
+<Tabs syncKey="pm">
+  <TabItem label="pip + venv">
+    ```bash
+    robot first_test.robot
+    ```
+  </TabItem>
+  <TabItem label="uv">
+    ```bash
+    uv run robot first_test.robot
+    ```
+  </TabItem>
+</Tabs>
+
+Expected output:
+
+```
+==============================================================================
+First Test
+==============================================================================
+Say Hello                                                             Hello, Robot Framework!
+| PASS |
+------------------------------------------------------------------------------
+First Test                                                            | PASS |
+1 test, 1 passed, 0 failed
+==============================================================================
+Output:  /your/project/path/output.xml
+Log:     /your/project/path/log.html
+Report:  /your/project/path/report.html
+```
+
+## Explore the logs and reports
+
+- **`output.xml`** — machine-readable raw output
+- **`log.html`** — detailed log with every keyword, argument, result
+- **`report.html`** — high-level summary
+
+Open the HTML files in a browser and click through — you'll use these files constantly while writing and debugging tests.
+
+## Install additional libraries (optional)
+
+<Tabs syncKey="pm">
+  <TabItem label="pip + venv">
+    ```bash
+    pip install robotframework-browser     # web automation (Playwright-based)
+    pip install robotframework-requests    # REST API testing
+    ```
+  </TabItem>
+  <TabItem label="uv">
+    ```bash
+    uv add robotframework-browser
+    uv add robotframework-requests
+    ```
+  </TabItem>
+</Tabs>
+
+## Checklist
+
+- Virtual environment active (prompt shows `(.venv)`), or using `uv run`
+- Robot Framework installed
+- `robot --version` prints the installed version
+- `first_test.robot` created
+- Test executes and passes
+- `log.html` and `report.html` opened in browser
+
+## Next
+
+[1.5 — Set up your IDE](../1-5-ide-setup/).

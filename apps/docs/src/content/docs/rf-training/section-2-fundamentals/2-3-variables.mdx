@@ -1,0 +1,159 @@
+---
+title: "2.3 — Variables"
+description: Scalars, lists, dictionaries, typed variables, and the modern VAR keyword.
+objectives:
+  - Declare scalar, list, and dictionary variables using `VAR`
+  - Explain why variables are strings by default and how typed variables fix it
+  - Access list items by index and dict values by key
+  - Name the common built-in variables (`${CURDIR}`, `${OUTPUT_DIR}`, `${TRUE}`, `${EMPTY}`)
+estimatedMinutes: 12
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Variables let you avoid repetition and write tests that are easier to read and maintain. Robot Framework has three variable types, distinguished by their prefix character:
+
+| Prefix | Type | Example |
+|---|---|---|
+| `$` | Scalar (single value) | `${warehouse}` |
+| `@` | List | `@{containers}` |
+| `&` | Dictionary | `&{shipment}` |
+
+## Declaring variables with `VAR`
+
+The modern way to create a variable inside a test is with the `VAR` keyword:
+
+```robot
+VAR    ${warehouse}     Munich DC
+VAR    @{containers}    MRKU1234567    TCLU7654321
+VAR    &{shipment}      origin=Munich    destination=Amsterdam
+
+Log    Shipping from ${shipment}[origin]
+```
+
+You can also declare suite-level variables in the `*** Variables ***` section, so they're available to every test in the file:
+
+```robot
+*** Variables ***
+${WAREHOUSE}      Munich DC
+@{CONTAINERS}     MRKU1234567    TCLU7654321
+&{SHIPMENT}       origin=Munich    destination=Amsterdam
+```
+
+<Aside type="tip">
+  By convention, suite-level variables are written in `UPPERCASE`, while test-local variables (declared with `VAR`) are `lowercase`. This makes scope visible at a glance.
+</Aside>
+
+## Gotcha: variables are strings by default
+
+<Aside type="caution">
+  This is the single most common source of confusion when starting out with Robot Framework. Read this section carefully.
+</Aside>
+
+By default, Robot Framework treats every variable as a **string** — even if you wrote what looks like a number:
+
+```robot
+VAR    ${weight}    8200
+
+# This passes — both are the STRING "8200"
+Should Be Equal    ${weight}    8200
+
+# This FAILS — you can't add a number to a string!
+${total}    Evaluate    ${weight} + 1000
+```
+
+The fix is **typed variables**. Add a type annotation after the variable name:
+
+```robot
+VAR    ${weight: int}    8200
+
+# Now ${weight} is a real integer
+${total}    Evaluate    ${weight} + 1000
+Should Be Equal As Integers    ${total}    9200
+```
+
+Common types you'll use:
+
+| Type | Example |
+|---|---|
+| `int` | `VAR ${count: int} 42` |
+| `float` | `VAR ${price: float} 19.99` |
+| `bool` | `VAR ${active: bool} True` |
+| `str` | `VAR ${name: str} Alice` |
+| `dict` | `VAR ${data: dict} {"key": "value"}` |
+
+You can also force a single value into a number inline by writing it as `${8200}` (with curly braces around the number). This is common in lists:
+
+```robot
+@{weights}    Create List    ${8200}    ${12400}    ${3000}
+```
+
+## Built-in variables worth knowing
+
+Robot Framework provides a handful of useful built-in variables you don't need to declare:
+
+| Variable | What it is |
+|---|---|
+| `${TRUE}` / `${FALSE}` | Boolean values |
+| `${NONE}` | Python's `None` — useful for "not set yet" |
+| `${EMPTY}` | An empty string (more readable than just nothing) |
+| `${CURDIR}` | The folder the current `.robot` file lives in |
+| `${OUTPUT_DIR}` | The folder where test artefacts are written (set via `-d`) |
+| `${/}` | OS-appropriate path separator (`/` or `\`) |
+
+Example — reading a test data file that lives next to your test:
+
+```robot
+${shipment}    Get File    ${CURDIR}/transport_event.json
+```
+
+## Lists and dictionaries in action
+
+There are three ways to build lists and dictionaries. They produce the same result — pick the one that fits where you are in your test.
+
+```robot
+# (1) Inline literal — only works in the *** Variables *** section
+@{containers}    MRKU1234567    TCLU7654321    MSKU9988776
+&{shipment}      origin=Munich    destination=Amsterdam    weight=${8200}
+
+# (2) VAR syntax — works anywhere (inside a test or a keyword)
+VAR    @{containers}    MRKU1234567    TCLU7654321    MSKU9988776
+VAR    &{shipment}      origin=Munich    destination=Amsterdam    weight=${8200}
+
+# (3) Create List / Create Dictionary keywords (the traditional style)
+@{containers}    Create List          MRKU1234567    TCLU7654321    MSKU9988776
+&{shipment}      Create Dictionary    origin=Munich    destination=Amsterdam    weight=${8200}
+```
+
+<Aside type="tip">
+  **Prefer `VAR`** for anything declared inside a test or keyword. It reads consistently with scalar declarations and — unlike inline literals or `Create List` — supports an optional `scope=` parameter:
+
+  ```robot
+  VAR    ${local_var}    local value              scope=LOCAL
+  VAR    ${test_var}     shared within test       scope=TEST
+  VAR    ${suite_var}    shared across suite      scope=SUITE
+  ```
+
+  Available scopes are `LOCAL` (default), `TEST`, `SUITE`, `SUITES`, and `GLOBAL`. This replaces the older family of `Set Variable`, `Set Test Variable`, `Set Suite Variable`, etc., with one consistent syntax.
+</Aside>
+
+Accessing values:
+
+```robot
+# List access by index (zero-based)
+Log    ${containers}[0]      # MRKU1234567
+
+# Dictionary access by key
+Log    ${shipment}[origin]    # Munich
+```
+
+## Checklist
+
+- You can declare scalar, list, and dictionary variables using `VAR`
+- You know that variables are strings by default, and how typed variables fix that
+- You can access list items by index and dict values by key
+- You know what `${CURDIR}` and `${OUTPUT_DIR}` refer to
+
+## Next
+
+[2.4 — Basic assertions](../2-4-assertions/).

@@ -1,0 +1,90 @@
+---
+title: "2.2 — Writing test cases"
+description: Name your test, add steps, add Documentation and Tags, and run individual tests with -t.
+objectives:
+  - Write a test case with a name and at least one step
+  - Add `[Documentation]` and `[Tags]` to a test
+  - Explain the difference between `Log` and `Log To Console`
+  - Run a single test by name using `-t`
+estimatedMinutes: 10
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+A test case in Robot Framework is simply a **name** followed by a list of **steps**. Each step is a call to a keyword, optionally with arguments.
+
+```robot
+*** Test Cases ***
+Warehouse Arrival Is Logged
+    Log              Shift started at Munich DC
+    Log To Console   Ready for dock assignments
+```
+
+That's a complete, runnable test. The test name (`Warehouse Arrival Is Logged`) starts at column 1 — no indentation. The steps are indented with at least two spaces.
+
+## Test settings: Documentation and Tags
+
+Each test can have settings that start with square brackets, placed **immediately after the test name**:
+
+```robot
+*** Test Cases ***
+Container Weight Is Within Limit
+    [Documentation]    Verifies that two containers do not exceed the vessel limit.
+    [Tags]             warehouse    smoke
+    Log    Checking container weights...
+```
+
+- `[Documentation]` — a short description that appears in the log and report
+- `[Tags]` — labels you can later use to filter which tests to run (e.g. only `smoke` tests)
+
+<Aside type="tip">
+  Long documentation can span multiple lines using `...` as a continuation marker:
+
+  ```robot
+  [Documentation]    This test verifies that two containers
+  ...                do not exceed the vessel weight limit
+  ...                of 25,000 kg.
+  ```
+</Aside>
+
+## Your two workhorse logging keywords
+
+Two built-in keywords will appear in almost every test you write:
+
+| Keyword | Where the message goes |
+|---|---|
+| `Log` | Into `log.html` only (not visible on the console) |
+| `Log To Console` | Printed to the terminal immediately, visible as the test runs |
+
+Use `Log` for most diagnostic output — it keeps the terminal clean and makes the log file rich. Use `Log To Console` only when you specifically want to see something in real time while the test runs.
+
+## Running a single test vs. a whole file
+
+To run everything in a file:
+
+```bash
+robot warehouse.robot
+```
+
+To run only one specific test case by name, use `-t`:
+
+```bash
+robot -t "Container Weight Is Within Limit" warehouse.robot
+```
+
+To put the log files in a dedicated folder instead of the current directory, use `-d`:
+
+```bash
+robot -d logs warehouse.robot
+```
+
+## Checklist
+
+- You can write a test case with a name and at least one step
+- You know how to add `[Documentation]` and `[Tags]` to a test
+- You know the difference between `Log` and `Log To Console`
+- You can run a single test by name using `-t`
+
+## Next
+
+[2.3 — Variables](../2-3-variables/).

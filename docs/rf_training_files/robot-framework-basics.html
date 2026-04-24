@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Robot Framework Basics</title>
+<style>
+    :root {
+        --bg: #ffffff;
+        --text: #1a1a2e;
+        --muted: #5a6270;
+        --accent: #0a2472;
+        --accent-light: #1e3a8a;
+        --border: #e1e4e8;
+        --code-bg: #f6f8fa;
+        --terminal-bg: #1e1e2e;
+        --terminal-text: #cdd6f4;
+        --terminal-prompt: #a6e3a1;
+        --terminal-comment: #6c7086;
+        --tip-bg: #fff8e1;
+        --tip-border: #f4c430;
+        --checklist-bg: #f0f4f8;
+
+        /* Robot Framework syntax colors */
+        --rf-section: #0550ae;
+        --rf-keyword: #7c3aed;
+        --rf-string: #116329;
+        --rf-variable: #bf4b0a;
+        --rf-comment: #6c7086;
+        --rf-argument: #24292f;
+
+        /* Shell syntax colors */
+        --sh-command: #0550ae;
+        --sh-flag: #7c3aed;
+        --sh-string: #116329;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.65;
+        color: var(--text);
+        background-color: var(--bg);
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 4rem;
+    }
+
+    h1 {
+        font-size: 2.4rem;
+        color: var(--accent);
+        border-bottom: 3px solid var(--accent);
+        padding-bottom: 0.6rem;
+        margin-top: 2.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    h2 {
+        font-size: 1.6rem;
+        color: var(--accent-light);
+        margin-top: 2.5rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.4rem;
+    }
+
+    h3 {
+        font-size: 1.2rem;
+        color: var(--accent-light);
+        margin-top: 1.8rem;
+        margin-bottom: 0.8rem;
+    }
+
+    p { margin: 0.8rem 0; }
+
+    strong { color: var(--accent-light); }
+
+    ul, ol { margin: 0.8rem 0; padding-left: 1.8rem; }
+    li { margin: 0.4rem 0; }
+
+    /* Inline code */
+    code {
+        font-family: "SF Mono", Menlo, Consolas, "Courier New", monospace;
+        font-size: 0.9em;
+        background-color: var(--code-bg);
+        color: var(--accent);
+        padding: 0.15em 0.4em;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+    }
+
+    /* Code blocks - base */
+    pre {
+        font-family: "SF Mono", Menlo, Consolas, "Courier New", monospace;
+        font-size: 0.88em;
+        padding: 1rem 1.2rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 1rem 0;
+        line-height: 1.5;
+    }
+
+    pre code {
+        background: none;
+        color: inherit;
+        padding: 0;
+        border: none;
+        font-size: inherit;
+    }
+
+    /* Robot Framework code block */
+    pre.robot {
+        background-color: var(--code-bg);
+        border: 1px solid var(--border);
+        color: var(--rf-argument);
+    }
+
+    pre.robot .rf-section  { color: var(--rf-section); font-weight: 700; }
+    pre.robot .rf-setting  { color: var(--rf-keyword); font-weight: 600; }
+    pre.robot .rf-keyword  { color: var(--rf-keyword); font-weight: 600; }
+    pre.robot .rf-testname { color: var(--rf-section); font-weight: 600; }
+    pre.robot .rf-variable { color: var(--rf-variable); }
+    pre.robot .rf-string   { color: var(--rf-string); }
+    pre.robot .rf-comment  { color: var(--rf-comment); font-style: italic; }
+
+    /* Shell / terminal command block (light) */
+    pre.shell {
+        background-color: var(--code-bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+    }
+
+    pre.shell .sh-prompt  { color: var(--terminal-prompt); font-weight: 700; user-select: none; }
+    pre.shell .sh-command { color: var(--sh-command); font-weight: 600; }
+    pre.shell .sh-flag    { color: var(--sh-flag); }
+    pre.shell .sh-string  { color: var(--sh-string); }
+    pre.shell .sh-comment { color: var(--rf-comment); font-style: italic; }
+
+    /* Terminal output block (dark) */
+    pre.terminal {
+        background-color: var(--terminal-bg);
+        color: var(--terminal-text);
+        border: 1px solid #313244;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    pre.terminal .t-pass    { color: #a6e3a1; font-weight: 700; }
+    pre.terminal .t-fail    { color: #f38ba8; font-weight: 700; }
+    pre.terminal .t-header  { color: #89b4fa; }
+    pre.terminal .t-path    { color: #f9e2af; }
+    pre.terminal .t-info    { color: #cba6f7; }
+    pre.terminal .t-dim     { color: var(--terminal-comment); }
+    pre.terminal .t-divider { color: #585b70; }
+
+    /* JSON block */
+    pre.json {
+        background-color: var(--code-bg);
+        border: 1px solid var(--border);
+    }
+    pre.json .j-key    { color: var(--rf-section); }
+    pre.json .j-string { color: var(--rf-string); }
+    pre.json .j-punct  { color: var(--muted); }
+
+    /* Tables */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.2rem 0;
+        font-size: 0.95em;
+    }
+
+    th, td {
+        border: 1px solid var(--border);
+        padding: 0.6rem 0.9rem;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        background-color: var(--code-bg);
+        font-weight: 600;
+        color: var(--accent-light);
+    }
+
+    tr:nth-child(even) td { background-color: #fafbfc; }
+
+    table code {
+        font-size: 0.88em;
+        white-space: nowrap;
+    }
+
+    /* Tip callout */
+    .tip {
+        background-color: var(--tip-bg);
+        border-left: 4px solid var(--tip-border);
+        padding: 0.8rem 1.1rem;
+        margin: 1rem 0;
+        border-radius: 0 6px 6px 0;
+    }
+    .tip::before { content: "💡 "; }
+
+    /* Collapsible section */
+    details {
+        margin: 1rem 0;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background-color: #fafbfc;
+    }
+
+    details[open] { background-color: #ffffff; }
+
+    summary {
+        cursor: pointer;
+        padding: 0.9rem 1.2rem;
+        font-weight: 600;
+        font-size: 1.05rem;
+        color: var(--accent-light);
+        list-style: none;
+        user-select: none;
+    }
+
+    summary::marker, summary::-webkit-details-marker { display: none; }
+
+    summary::before {
+        content: "▸";
+        display: inline-block;
+        margin-right: 0.6rem;
+        transition: transform 0.2s ease;
+        color: var(--accent);
+    }
+
+    details[open] summary::before { transform: rotate(90deg); }
+
+    details > *:not(summary) { padding: 0 1.2rem; }
+    details > *:last-child { padding-bottom: 1rem; }
+
+    /* Checklist */
+    .checklist {
+        background-color: var(--checklist-bg);
+        border-radius: 8px;
+        padding: 1rem 1.4rem;
+        margin: 1.2rem 0;
+    }
+
+    .checklist ul { list-style: none; padding-left: 0; }
+    .checklist li { margin: 0.5rem 0; padding-left: 1.8rem; position: relative; }
+    .checklist li::before {
+        content: "☐";
+        position: absolute;
+        left: 0;
+        font-size: 1.15em;
+        color: var(--accent);
+    }
+
+    /* Flipcards */
+    .flipcard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1rem;
+        margin: 1.2rem 0;
+    }
+
+    .flipcard {
+        perspective: 1000px;
+        height: 180px;
+    }
+
+    .flipcard-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        cursor: pointer;
+    }
+
+    .flipcard.flipped .flipcard-inner { transform: rotateY(180deg); }
+
+    .flipcard-front, .flipcard-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 10px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .flipcard-front {
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 1.05rem;
+    }
+
+    .flipcard-front code {
+        background-color: rgba(255,255,255,0.18);
+        color: #ffffff;
+        border: none;
+    }
+
+    .flipcard-back {
+        background-color: #ffffff;
+        border: 2px solid var(--accent);
+        color: var(--text);
+        transform: rotateY(180deg);
+        font-size: 0.92rem;
+        line-height: 1.4;
+    }
+
+    .flipcard-hint {
+        font-size: 0.85rem;
+        color: var(--muted);
+        font-style: italic;
+        margin: 0.3rem 0 0.8rem;
+    }
+
+    /* Section separator */
+    hr {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 2.5rem 0;
+    }
+
+    /* Header meta */
+    .meta {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Page title block */
+    .title-block {
+        padding: 1.5rem 0;
+        margin-bottom: 2rem;
+        border-bottom: 4px solid var(--accent);
+    }
+
+    .title-block h1 {
+        border: none;
+        padding: 0;
+        margin: 0;
+        font-size: 2.8rem;
+    }
+
+    .title-block .subtitle {
+        color: var(--muted);
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+    }
+</style>
+</head>
+<body>
+
+<div class="title-block">
+    <h1>Robot Framework Basics</h1>
+    <div class="subtitle">Chapter content — Installing Robot Framework &amp; Setting up your IDE</div>
+</div>
+
+<!-- ============================================================
+     CHAPTER 1 — INSTALLING ROBOT FRAMEWORK
+     ============================================================ -->
+
+<h1>Installing Robot Framework</h1>
+
+<p>Now that you have Python, pip, and a virtual environment ready, installing Robot Framework is quick. In this chapter, you'll install Robot Framework into your project, verify it works, and run your very first test from the command line.</p>
+
+<p>Robot Framework is an open-source, generic automation framework built on Python. It's widely used for test automation and robotic process automation (RPA). Its readable syntax, rich ecosystem of libraries, and active community at <strong>robotframework.org</strong> make it a great choice for both beginners and experienced QA professionals.</p>
+
+<p>By the end of this chapter, you will have a working Robot Framework installation and will have executed your first test from the CLI.</p>
+
+<details open>
+<summary>Install Robot Framework</summary>
+
+<p>Make sure your virtual environment is <strong>activated</strong> before installing. You should see <code>(.venv)</code> (or similar) at the beginning of your terminal prompt.</p>
+
+<p>First, make sure pip itself is up to date:</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">pip</span> install <span class="sh-flag">--upgrade</span> pip</code></pre>
+
+<p>Then install Robot Framework:</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">pip</span> install robotframework</code></pre>
+
+<p>This installs the latest stable version of Robot Framework into your virtual environment. If you want to pin a specific version (recommended for team projects), run:</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">pip</span> install robotframework==<span class="sh-string">7.4.2</span></code></pre>
+
+<div class="tip"><strong>Using uv instead?</strong> From your project folder, simply run <code>uv add robotframework</code>. This installs Robot Framework into the project's <code>.venv</code>, records it in <code>pyproject.toml</code>, and locks the exact version in <code>uv.lock</code> — no manual activation needed.</div>
+
+</details>
+
+<details open>
+<summary>Verify the installation</summary>
+
+<p>To confirm Robot Framework is installed correctly, ask it for its version:</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">robot</span> <span class="sh-flag">--version</span></code></pre>
+
+<p>You should see output similar to:</p>
+
+<pre class="terminal"><code><span class="t-info">Robot Framework 7.4.2 (Python 3.13.0 on win32)</span></code></pre>
+
+<p>If you see the version number, you're ready to go.</p>
+
+<div class="tip"><strong>Using uv?</strong> Run <code>uv run robot --version</code> instead. The <code>uv run</code> prefix ensures the command uses your project's isolated environment.</div>
+
+</details>
+
+<details open>
+<summary>Freeze your dependencies (pip only)</summary>
+
+<p>To make your project reproducible for teammates or CI, record your installed packages in a <code>requirements.txt</code> file:</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">pip</span> freeze &gt; requirements.txt</code></pre>
+
+<p>Anyone cloning your project can then recreate the same environment with:</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">pip</span> install <span class="sh-flag">-r</span> requirements.txt</code></pre>
+
+<div class="tip"><strong>Using uv?</strong> You can skip this step entirely. <code>uv</code> already tracks your dependencies in <code>pyproject.toml</code> and <code>uv.lock</code>. A teammate only needs to run <code>uv sync</code>.</div>
+
+</details>
+
+<details open>
+<summary>Create your first test</summary>
+
+<p>Inside your project folder, create a new file called <code>first_test.robot</code> with the following content:</p>
+
+<pre class="robot"><code><span class="rf-section">*** Settings ***</span>
+<span class="rf-setting">Documentation</span>    My very first Robot Framework test
+
+<span class="rf-section">*** Test Cases ***</span>
+<span class="rf-testname">Say Hello</span>
+    <span class="rf-keyword">Log To Console</span>    <span class="rf-string">Hello, Robot Framework!</span>
+    <span class="rf-keyword">Should Be Equal</span>    <span class="rf-variable">${1 + 1}</span>    <span class="rf-variable">${2}</span></code></pre>
+
+<p>A few things to notice:</p>
+
+<ul>
+    <li><code>*** Settings ***</code> and <code>*** Test Cases ***</code> are <strong>section headers</strong> — they tell Robot Framework what kind of content follows.</li>
+    <li><code>Say Hello</code> is the name of the test case.</li>
+    <li><code>Log To Console</code> and <code>Should Be Equal</code> are <strong>keywords</strong> from Robot Framework's built-in libraries.</li>
+    <li>Arguments are separated from keywords (and from each other) by <strong>at least two spaces</strong> — this is important!</li>
+</ul>
+
+</details>
+
+<details open>
+<summary>Run your first test from the CLI</summary>
+
+<p>With your virtual environment activated, run:</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">robot</span> first_test.robot</code></pre>
+
+<p>You should see output similar to:</p>
+
+<pre class="terminal"><code><span class="t-divider">==============================================================================</span>
+<span class="t-header">First Test</span>
+<span class="t-divider">==============================================================================</span>
+Say Hello                                                             Hello, Robot Framework!
+| <span class="t-pass">PASS</span> |
+<span class="t-divider">------------------------------------------------------------------------------</span>
+<span class="t-header">First Test</span>                                                            | <span class="t-pass">PASS</span> |
+1 test, 1 passed, 0 failed
+<span class="t-divider">==============================================================================</span>
+<span class="t-dim">Output:</span>  <span class="t-path">/your/project/path/output.xml</span>
+<span class="t-dim">Log:</span>     <span class="t-path">/your/project/path/log.html</span>
+<span class="t-dim">Report:</span>  <span class="t-path">/your/project/path/report.html</span></code></pre>
+
+<p>🎉 Congratulations — you've just run your first Robot Framework test!</p>
+
+<div class="tip"><strong>Using uv?</strong> Run <code>uv run robot first_test.robot</code> instead.</div>
+
+</details>
+
+<details open>
+<summary>Explore the logs and reports</summary>
+
+<p>After each test run, Robot Framework generates three files in your project folder:</p>
+
+<ul>
+    <li><code>output.xml</code> — machine-readable raw output (used to regenerate reports or merge results)</li>
+    <li><code>log.html</code> — detailed log with every keyword, argument, and result</li>
+    <li><code>report.html</code> — high-level summary of test statuses</li>
+</ul>
+
+<p>Open <code>log.html</code> and <code>report.html</code> in your browser to explore them. These files are your best friends when debugging failing tests.</p>
+
+</details>
+
+<details open>
+<summary>Install additional libraries (optional)</summary>
+
+<p>Robot Framework on its own comes with several built-in libraries (like <code>BuiltIn</code>, <code>Collections</code>, <code>String</code>, <code>OperatingSystem</code>). For more advanced use cases, you can add external libraries the same way you installed Robot Framework itself:</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">pip</span> install robotframework-browser
+<span class="sh-prompt">$</span> <span class="sh-command">pip</span> install robotframework-requests</code></pre>
+
+<ul>
+    <li><strong>Browser</strong> — modern web automation based on Playwright</li>
+    <li><strong>Requests</strong> — simple keywords for testing REST APIs</li>
+</ul>
+
+<p>To list all installed Robot Framework libraries, run:</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">pip</span> list | <span class="sh-command">grep</span> robotframework</code></pre>
+
+<p>On Windows, use <code>pip list | findstr robotframework</code> instead.</p>
+
+<div class="tip"><strong>Using uv?</strong> Replace <code>pip install</code> with <code>uv add</code> (e.g. <code>uv add robotframework-browser</code>).</div>
+
+<p>These libraries will be covered in more depth in later chapters and in the dedicated web automation course.</p>
+
+</details>
+
+<h3>Recap / Cheat Sheet</h3>
+
+<table>
+<thead>
+<tr><th>Task</th><th>pip + venv</th><th>uv</th></tr>
+</thead>
+<tbody>
+<tr><td>Install Robot Framework</td><td><code>pip install robotframework</code></td><td><code>uv add robotframework</code></td></tr>
+<tr><td>Verify installation</td><td><code>robot --version</code></td><td><code>uv run robot --version</code></td></tr>
+<tr><td>Run a test file</td><td><code>robot &lt;file.robot&gt;</code></td><td><code>uv run robot &lt;file.robot&gt;</code></td></tr>
+<tr><td>Run all tests in a folder</td><td><code>robot &lt;folder&gt;</code></td><td><code>uv run robot &lt;folder&gt;</code></td></tr>
+<tr><td>Add the Browser library</td><td><code>pip install robotframework-browser</code></td><td><code>uv add robotframework-browser</code></td></tr>
+<tr><td>Save project dependencies</td><td><code>pip freeze &gt; requirements.txt</code></td><td><em>(automatic in <code>uv.lock</code>)</em></td></tr>
+<tr><td>Reproduce environment</td><td><code>pip install -r requirements.txt</code></td><td><code>uv sync</code></td></tr>
+</tbody>
+</table>
+
+<h3>Checklist</h3>
+
+<div class="checklist">
+<ul>
+    <li><strong>Virtual environment active</strong> — your terminal prompt shows <code>(.venv)</code> or similar</li>
+    <li><strong>Robot Framework installed</strong> — <code>pip install robotframework</code> (or <code>uv add robotframework</code>) completed successfully</li>
+    <li><strong>Version verified</strong> — <code>robot --version</code> prints the installed version</li>
+    <li><strong>First test created</strong> — <code>first_test.robot</code> exists in your project folder</li>
+    <li><strong>First test executed</strong> — the test passes when run from the CLI</li>
+    <li><strong>Logs and reports reviewed</strong> — you've opened <code>log.html</code> and <code>report.html</code> in your browser</li>
+</ul>
+</div>
+
+<h3>Flipcards</h3>
+<p class="flipcard-hint">Click any card to flip it.</p>
+
+<div class="flipcard-grid">
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>pip install robotframework</code></div>
+        <div class="flipcard-back">The command to install Robot Framework into your active virtual environment using pip.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>robot --version</code></div>
+        <div class="flipcard-back">Command to verify the Robot Framework installation and display the installed version.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>.robot</code></div>
+        <div class="flipcard-back">The standard file extension for Robot Framework test suite files.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>*** Settings ***</code></div>
+        <div class="flipcard-back">Section header used to import libraries, resource files, and define suite-level metadata such as documentation.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>*** Test Cases ***</code></div>
+        <div class="flipcard-back">Section header that introduces one or more test cases in a <code>.robot</code> file.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Keyword</div>
+        <div class="flipcard-back">A reusable action in Robot Framework, such as <code>Log To Console</code> or <code>Should Be Equal</code>. Can come from built-in libraries, external libraries, or your own definitions.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Two-space separator</div>
+        <div class="flipcard-back">Robot Framework uses <strong>at least two spaces</strong> to separate a keyword from its arguments (and arguments from each other). A single space is not enough.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>robot first_test.robot</code></div>
+        <div class="flipcard-back">The CLI command to execute a single Robot Framework test file from your project folder.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>log.html</code></div>
+        <div class="flipcard-back">An auto-generated file after each test run containing a detailed log of every keyword, argument, and result — your main tool for debugging.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>report.html</code></div>
+        <div class="flipcard-back">An auto-generated file after each test run containing a high-level summary of test statuses (pass/fail statistics).</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>output.xml</code></div>
+        <div class="flipcard-back">The machine-readable raw output from a Robot Framework test run. Used to regenerate reports or merge results from multiple runs.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>requirements.txt</code></div>
+        <div class="flipcard-back">A file listing your project's Python dependencies. Created with <code>pip freeze &gt; requirements.txt</code> and used to reproduce the environment elsewhere.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Browser Library</div>
+        <div class="flipcard-back">An external Robot Framework library for modern web automation, based on Playwright. Installed via <code>pip install robotframework-browser</code>.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Requests Library</div>
+        <div class="flipcard-back">An external Robot Framework library for testing REST APIs. Installed via <code>pip install robotframework-requests</code>.</div>
+    </div></div>
+</div>
+
+<hr>
+
+<!-- ============================================================
+     CHAPTER 2 — SET UP YOUR IDE
+     ============================================================ -->
+
+<h1>Set up your IDE</h1>
+
+<p>A good IDE makes writing Robot Framework tests dramatically faster and more enjoyable. It highlights syntax, autocompletes keywords, navigates to keyword definitions, shows inline documentation, and lets you run and debug tests with a single click.</p>
+
+<p>For Robot Framework, the recommended setup today is <strong>Visual Studio Code (VS Code)</strong> with the <strong>RobotCode</strong> extension. RobotCode is an actively maintained, all-in-one extension that combines a language server, debugger, test explorer integration, and a code formatter — everything you need in a single install.</p>
+
+<p>By the end of this chapter, you will have VS Code configured with RobotCode, your Python interpreter connected, and your first test runnable directly from the editor.</p>
+
+<details open>
+<summary>Why RobotCode?</summary>
+
+<p>RobotCode is the successor to older extensions (such as the Robot Framework Language Server and RED). It is built specifically for modern Robot Framework versions and offers:</p>
+
+<ul>
+    <li><strong>Syntax highlighting</strong> for <code>.robot</code> and <code>.resource</code> files</li>
+    <li><strong>Autocompletion</strong> for keywords, variables, and imports</li>
+    <li><strong>Go to definition</strong> and <strong>Find all references</strong> for keywords and variables</li>
+    <li><strong>Inline documentation</strong> on hover</li>
+    <li><strong>Test Explorer integration</strong> — run and debug tests from VS Code's Testing panel</li>
+    <li><strong>Full debugger</strong> with breakpoints, step-through, and variable inspection</li>
+    <li><strong>Built-in code formatter</strong> using Robotidy</li>
+    <li><strong>Refactoring tools</strong> (rename keyword, rename variable, etc.)</li>
+</ul>
+
+</details>
+
+<details open>
+<summary>Install Visual Studio Code</summary>
+
+<p>If you don't already have VS Code installed:</p>
+
+<ol>
+    <li>Go to <a href="https://code.visualstudio.com">https://code.visualstudio.com</a></li>
+    <li>Download the installer for your operating system</li>
+    <li>Run the installer and follow the default options</li>
+</ol>
+
+<p>On macOS you can also install it via Homebrew:</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">brew</span> install <span class="sh-flag">--cask</span> visual-studio-code</code></pre>
+
+<p>On Linux (Debian/Ubuntu):</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">sudo</span> apt install code</code></pre>
+
+</details>
+
+<details open>
+<summary>Install the RobotCode extension</summary>
+
+<ol>
+    <li>Open VS Code</li>
+    <li>Open the <strong>Extensions</strong> panel (shortcut: <code>Ctrl+Shift+X</code> on Windows/Linux, <code>Cmd+Shift+X</code> on macOS)</li>
+    <li>Search for <strong>RobotCode</strong></li>
+    <li>Click <strong>Install</strong> on the extension by <em>d-biehl</em></li>
+</ol>
+
+<div class="tip">RobotCode automatically installs the official <strong>Python</strong> extension from Microsoft as a dependency. You don't need to install it separately.</div>
+
+</details>
+
+<details open>
+<summary>Open your project folder</summary>
+
+<p>RobotCode works best when VS Code is opened on your <strong>project folder</strong> (not a single file).</p>
+
+<ul>
+    <li>Use <strong>File → Open Folder…</strong> and select your <code>my-rf-tests</code> folder (the one you created earlier)</li>
+    <li>VS Code will remember this as your workspace</li>
+</ul>
+
+<p>Opening the folder is important because RobotCode reads your Python environment, your <code>.robot</code> files, and any resource/library files from the project root.</p>
+
+</details>
+
+<details open>
+<summary>Select the correct Python interpreter</summary>
+
+<p>RobotCode needs to know which Python to use — specifically, the one inside your virtual environment where Robot Framework is installed.</p>
+
+<ol>
+    <li>Open the Command Palette (<code>Ctrl+Shift+P</code> / <code>Cmd+Shift+P</code>)</li>
+    <li>Type and select <strong>Python: Select Interpreter</strong></li>
+    <li>Choose the interpreter inside your project's <code>.venv</code> folder. It should look like:
+        <ul>
+            <li>Windows: <code>.\.venv\Scripts\python.exe</code></li>
+            <li>macOS/Linux: <code>./.venv/bin/python</code></li>
+        </ul>
+    </li>
+</ol>
+
+<p>If VS Code doesn't list it automatically, click <strong>Enter interpreter path…</strong> and point it to the file manually.</p>
+
+<div class="tip"><strong>Using uv?</strong> The <code>.venv</code> folder created by <code>uv</code> lives inside your project and works exactly the same way — just pick it from the list.</div>
+
+</details>
+
+<details open>
+<summary>Verify syntax highlighting and autocompletion</summary>
+
+<p>Open your <code>first_test.robot</code> file. You should immediately see:</p>
+
+<ul>
+    <li><strong>Coloured keywords, sections, and variables</strong> (syntax highlighting)</li>
+    <li><strong>Autocompletion suggestions</strong> when you start typing a keyword name</li>
+    <li><strong>Hover tooltips</strong> showing keyword documentation when you hover over <code>Log To Console</code> or <code>Should Be Equal</code></li>
+</ul>
+
+<p>If you don't see any of these, double-check that:</p>
+
+<ul>
+    <li>The file extension is <code>.robot</code></li>
+    <li>The bottom-right of VS Code shows <strong>Robot Framework</strong> as the detected language</li>
+    <li>The correct Python interpreter is selected (see previous step)</li>
+</ul>
+
+</details>
+
+<details open>
+<summary>Run tests from the Test Explorer</summary>
+
+<p>RobotCode integrates with VS Code's built-in <strong>Testing</strong> panel.</p>
+
+<ol>
+    <li>Click the <strong>flask icon</strong> in the left sidebar (the Testing panel)</li>
+    <li>You will see your test suites and test cases listed</li>
+    <li>Click the <strong>▶ Run</strong> button next to any test to execute it</li>
+    <li>Click the <strong>🐞 Debug</strong> button to run it with the debugger attached</li>
+</ol>
+
+<p>Test results appear inline next to each test (✔ passed, ✘ failed) and full output is shown in the <strong>Test Results</strong> tab.</p>
+
+</details>
+
+<details open>
+<summary>Debug a test with breakpoints</summary>
+
+<p>RobotCode supports full debugging of Robot Framework tests:</p>
+
+<ol>
+    <li>Open a <code>.robot</code> file</li>
+    <li>Click in the gutter to the left of any line number to set a <strong>breakpoint</strong> (a red dot appears)</li>
+    <li>Open the Testing panel and click the <strong>🐞 Debug</strong> button next to the test</li>
+    <li>When execution hits the breakpoint, you can:
+        <ul>
+            <li>Inspect variables in the <strong>Variables</strong> panel</li>
+            <li>Step over, step into, or continue using the debug toolbar</li>
+            <li>Evaluate expressions in the <strong>Debug Console</strong></li>
+        </ul>
+    </li>
+</ol>
+
+</details>
+
+<details open>
+<summary>Format your code with Robotidy</summary>
+
+<p>RobotCode includes a built-in formatter powered by <strong>Robotidy</strong>, which enforces consistent Robot Framework style.</p>
+
+<ul>
+    <li>Format the current file: <code>Shift+Alt+F</code> (Windows/Linux) or <code>Shift+Option+F</code> (macOS)</li>
+    <li>Format on save: add this to your VS Code <code>settings.json</code>:</li>
+</ul>
+
+<pre class="json"><code>{
+    <span class="j-key">"[robotframework]"</span><span class="j-punct">:</span> {
+        <span class="j-key">"editor.defaultFormatter"</span><span class="j-punct">:</span> <span class="j-string">"d-biehl.robotcode"</span><span class="j-punct">,</span>
+        <span class="j-key">"editor.formatOnSave"</span><span class="j-punct">:</span> <span class="j-string">true</span>
+    }
+}</code></pre>
+
+</details>
+
+<details open>
+<summary>Useful keyboard shortcuts</summary>
+
+<table>
+<thead>
+<tr><th>Action</th><th>Windows/Linux</th><th>macOS</th></tr>
+</thead>
+<tbody>
+<tr><td>Command Palette</td><td><code>Ctrl+Shift+P</code></td><td><code>Cmd+Shift+P</code></td></tr>
+<tr><td>Go to Definition</td><td><code>F12</code></td><td><code>F12</code></td></tr>
+<tr><td>Find All References</td><td><code>Shift+F12</code></td><td><code>Shift+F12</code></td></tr>
+<tr><td>Rename Symbol</td><td><code>F2</code></td><td><code>F2</code></td></tr>
+<tr><td>Format Document</td><td><code>Shift+Alt+F</code></td><td><code>Shift+Option+F</code></td></tr>
+<tr><td>Run Current Test</td><td>Click ▶ in gutter</td><td>Click ▶ in gutter</td></tr>
+</tbody>
+</table>
+
+</details>
+
+<details open>
+<summary>Optional: recommended companion extensions</summary>
+
+<p>While RobotCode covers most needs, these extensions pair well with it:</p>
+
+<ul>
+    <li><strong>Python</strong> (Microsoft) — installed automatically with RobotCode</li>
+    <li><strong>Even Better TOML</strong> — useful if you're editing <code>pyproject.toml</code> (especially with uv)</li>
+    <li><strong>GitLens</strong> — enhances Git integration, useful for team projects</li>
+    <li><strong>Error Lens</strong> — shows errors and warnings inline</li>
+</ul>
+
+</details>
+
+<h3>Checklist</h3>
+
+<div class="checklist">
+<ul>
+    <li><strong>VS Code installed</strong> — you can open the application</li>
+    <li><strong>RobotCode extension installed</strong> — visible in the Extensions panel as <em>Enabled</em></li>
+    <li><strong>Project folder opened</strong> — your <code>my-rf-tests</code> folder is the current workspace</li>
+    <li><strong>Python interpreter selected</strong> — pointing to <code>.venv</code> inside your project</li>
+    <li><strong>Syntax highlighting works</strong> — <code>.robot</code> files appear coloured and structured</li>
+    <li><strong>Test Explorer shows tests</strong> — your test cases appear in the Testing panel</li>
+    <li><strong>First test runs from the editor</strong> — the ▶ button executes the test and shows a green ✔</li>
+</ul>
+</div>
+
+<h3>Flipcards</h3>
+<p class="flipcard-hint">Click any card to flip it.</p>
+
+<div class="flipcard-grid">
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">RobotCode</div>
+        <div class="flipcard-back">The recommended VS Code extension for Robot Framework. Provides syntax highlighting, autocompletion, debugging, and Test Explorer integration in a single install.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Language Server</div>
+        <div class="flipcard-back">The component inside RobotCode that powers autocompletion, go-to-definition, hover docs, and error detection as you type.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Python Interpreter</div>
+        <div class="flipcard-back">The specific Python executable VS Code uses to run your tests. Must point to the one inside your project's <code>.venv</code> folder.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Test Explorer</div>
+        <div class="flipcard-back">VS Code's built-in Testing panel (flask icon). With RobotCode, it lists all your Robot Framework tests and lets you run or debug them with a single click.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Breakpoint</div>
+        <div class="flipcard-back">A marker set on a line of code (red dot in the gutter) that pauses test execution at that point, so you can inspect variables and step through the test.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Robotidy</div>
+        <div class="flipcard-back">A code formatter for Robot Framework, built into RobotCode. Enforces consistent style and formatting across <code>.robot</code> files.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Go to Definition <br><code>F12</code></div>
+        <div class="flipcard-back">A navigation shortcut that jumps from a keyword or variable usage directly to where it is defined — in your own files or in an imported library.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Command Palette</div>
+        <div class="flipcard-back">The central command launcher in VS Code (<code>Ctrl+Shift+P</code> / <code>Cmd+Shift+P</code>). Used to select the Python interpreter, run tasks, and trigger extension commands.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Workspace / Project Folder</div>
+        <div class="flipcard-back">The root folder opened in VS Code (e.g. <code>my-rf-tests</code>). RobotCode reads your Python environment and <code>.robot</code> files relative to this folder.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Format on Save</div>
+        <div class="flipcard-back">A VS Code setting that automatically runs the formatter (Robotidy) every time you save a <code>.robot</code> file, keeping your code style consistent.</div>
+    </div></div>
+</div>
+
+<hr>
+
+<p class="meta" style="text-align:center;">Robot Framework Basics — Course content</p>
+
+</body>
+</html>

@@ -1,0 +1,84 @@
+---
+title: "2.1 — Anatomy of a .robot file"
+description: The four sections of a Robot Framework test file and the two-space separator rule.
+objectives:
+  - Name the four sections of a `.robot` file
+  - Apply the two-space separator rule when writing keywords + arguments
+  - Add comments with `#`
+estimatedMinutes: 8
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+A Robot Framework test file is just a plain text file with the extension `.robot`. Inside it, content is organised into **sections**, each introduced by a header that starts and ends with `***`.
+
+You will encounter four sections in nearly every file:
+
+| Section | What it holds |
+|---|---|
+| `*** Settings ***` | Library imports, file-level documentation, suite setup/teardown |
+| `*** Variables ***` | Variables that are available to all tests in the file |
+| `*** Test Cases ***` | The actual tests |
+| `*** Keywords ***` | Reusable keywords that you define yourself |
+
+Here is a minimal but complete example. Every test suite you write will follow this same skeleton:
+
+```robot
+*** Settings ***
+Documentation    Minimal example of a Robot Framework test file.
+Library          Collections
+
+*** Variables ***
+${WAREHOUSE}     Munich Distribution Center
+
+*** Test Cases ***
+Welcome To Warehouse
+    Greet Warehouse
+    Log    Shift is starting
+
+*** Keywords ***
+Greet Warehouse
+    Log To Console    Hello, ${WAREHOUSE}!
+```
+
+Notice how the test case `Welcome To Warehouse` calls the custom keyword `Greet Warehouse` — that's how the four sections fit together: settings configure the file, variables hold reusable values, the test case describes the scenario, and user-defined keywords keep the test readable.
+
+## The two-space separator rule
+
+Robot Framework separates keywords from their arguments — and arguments from each other — with **at least two spaces**. This is probably the single most common source of beginner confusion.
+
+✅ Correct (two spaces between keyword and argument):
+
+```robot
+Log    Hello, world!
+```
+
+❌ Wrong (only one space — Robot Framework will think `Log Hello,` is the keyword name):
+
+```robot
+Log Hello, world!
+```
+
+<Aside type="tip">
+  Most IDEs (including VS Code with RobotCode) highlight this for you automatically. If a keyword turns red or autocomplete stops working, check your spacing first.
+</Aside>
+
+## Comments
+
+Use `#` to add comments. Everything from `#` to the end of the line is ignored by Robot Framework.
+
+```robot
+# This whole line is a comment
+Log    Hello    # You can also comment at the end of a line
+```
+
+## Checklist
+
+- You can name the four main sections of a `.robot` file
+- You know that section headers must start and end with `***`
+- You understand the two-space separator rule
+- You know how to add a comment with `#`
+
+## Next
+
+[2.2 — Writing test cases](../2-2-writing-tests/).

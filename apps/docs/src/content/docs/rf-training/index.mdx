@@ -1,0 +1,53 @@
+---
+title: Robot Framework Training
+description: A Lernkit-authored training course covering Robot Framework from zero to writing real tests.
+objectives:
+  - Install Python, Robot Framework, and the RobotCode VS Code extension
+  - Understand the anatomy of a `.robot` file (settings, variables, test cases, keywords)
+  - Write test cases using variables, assertions, and basic control structures
+estimatedMinutes: 90
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+This course is authored in Lernkit. Every page is an MDX file under `apps/docs/src/content/docs/rf-training/`. The source material for the conversion is in `docs/rf_training_files/`.
+
+<Aside type="note">
+  This course is a dogfooding exercise for Lernkit. The conversion surfaced the gaps documented at [`docs/rf_training_files/GAPS.md`](https://github.com/manykarim/lernkit/blob/main/docs/rf_training_files/GAPS.md). Where the ideal Lernkit widget doesn't exist yet, lessons fall back to styled prose or an end-of-section quiz.
+</Aside>
+
+## What's inside
+
+<CardGrid>
+  <LinkCard
+    title="Section 1 — Getting started"
+    description="Install Python, set up a virtual environment, install Robot Framework, configure VS Code."
+    href="/rf-training/section-1-getting-started/"
+  />
+  <LinkCard
+    title="Section 2 — Fundamentals"
+    description="Anatomy of a .robot file, test cases, variables, assertions, control structures."
+    href="/rf-training/section-2-fundamentals/"
+  />
+  <LinkCard
+    title="Cheat sheet"
+    description="Side-by-side reference for pip and uv workflows."
+    href="/rf-training/cheat-sheet/"
+  />
+</CardGrid>
+
+## How to take this course
+
+Each chapter ends with a **Checklist** (things you should be able to do or identify). The end of each section has a **Review** page with a short quiz that feeds the Lernkit Tracker — those answers are what would be reported to an LMS via SCORM / xAPI in a real delivery.
+
+Everything in this course is **self-paced**. The code blocks are copy-pasteable. The `.robot` snippets run on your own machine against your own Robot Framework install — there's no remote runner yet (that lands with the Phase-3 rf-mcp integration per [ADR 0009](https://github.com/manykarim/lernkit/blob/main/docs/adr/0009-reuse-rf-mcp-as-robot-framework-runner-base.md)).
+
+## What this course is not
+
+- It's **not** a replacement for the [Robot Framework User Guide](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html). The UG is the authoritative reference; this course is a guided first path through it.
+- It's **not** a browser-automation tutorial. That's a follow-on course covering the Browser library (Playwright-based) specifically.
+- It's **not** a certification course. There's no proctored exam at the end, and the quizzes are formative, not gated.
+
+## License + source
+
+Content CC BY 4.0 by The Lernkit contributors. MDX sources live in the repo; you can fork and re-author your own training from the same material.

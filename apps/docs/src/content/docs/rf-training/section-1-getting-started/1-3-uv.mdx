@@ -1,0 +1,72 @@
+---
+title: "1.3 — Optional: use uv for dependency management"
+description: A modern, fast alternative to pip + venv for Python project management.
+objectives:
+  - Install `uv`
+  - Initialise a project with `uv init` and pin Python 3.13
+  - Add and run Robot Framework via `uv add` and `uv run`
+estimatedMinutes: 6
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**`uv`** is a modern, very fast tool that handles Python installation, venv creation, and dependency management in a single command. This chapter is **optional** — if you're happy with pip and venv, skip to [1.4 — Installing Robot Framework](../1-4-installing-rf/).
+
+## Install uv
+
+<Tabs syncKey="os">
+  <TabItem label="Windows (PowerShell)">
+    ```powershell
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+  </TabItem>
+
+  <TabItem label="macOS / Linux">
+    ```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+  </TabItem>
+</Tabs>
+
+Verify with:
+
+```bash
+uv --version
+```
+
+## Initialise a project
+
+```bash
+uv init my-rf-tests
+cd my-rf-tests
+uv python pin 3.13
+uv add robotframework
+uv run robot --version
+```
+
+You **never need to activate** the venv manually — `uv run` handles it for you.
+
+## uv cheat sheet
+
+| Task | Command |
+|---|---|
+| Add a package | `uv add <package>` |
+| Remove a package | `uv remove <package>` |
+| Install everything from lock | `uv sync` |
+| Run a command in the env | `uv run <command>` |
+| Update uv itself | `uv self update` |
+
+<Aside type="tip">
+  Commit both `pyproject.toml` and `uv.lock` to version control. That way a teammate can reproduce the exact environment with a single `uv sync`.
+</Aside>
+
+## Checklist
+
+- `uv --version` works
+- `uv init my-rf-tests` created a project folder
+- `uv add robotframework` completed successfully
+- `uv run robot --version` prints the installed Robot Framework version
+
+## Next
+
+Continue to [1.4 — Installing Robot Framework](../1-4-installing-rf/) for the full install + first-test walk-through using either pip or uv.

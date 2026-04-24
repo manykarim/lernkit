@@ -1,0 +1,83 @@
+---
+title: "1.1 — Install Python and pip"
+description: Install Python 3.13+ and verify the installation on Windows, macOS, and Linux.
+objectives:
+  - Install Python 3.13 or higher
+  - Verify `python --version` and `pip --version` from any terminal
+estimatedMinutes: 10
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Robot Framework is built with Python, so you need Python installed on your machine. You also need **pip**, Python's package manager, which ships with Python by default. Robot Framework works with Python 3.8 or newer — but we recommend **Python 3.13 or higher** for the best experience with the latest features.
+
+## Install Python
+
+<Tabs syncKey="os">
+  <TabItem label="Windows">
+    1. Go to [python.org/downloads](https://www.python.org/downloads/) and download the latest stable Windows installer.
+    2. Run the installer.
+    3. **Important:** Tick the box **"Add python.exe to PATH"** on the first screen.
+    4. **Important:** Leave **"Use admin privileges when installing py.exe"** unticked — this avoids needing elevated permissions and keeps Python in your user profile.
+    5. Click **Install Now** and wait for it to finish.
+  </TabItem>
+
+  <TabItem label="macOS">
+    Open a terminal and run:
+
+    ```bash
+    brew install python
+    ```
+
+    Homebrew will download and install the latest stable Python version and will handle updates for you afterwards.
+  </TabItem>
+
+  <TabItem label="Linux (Debian/Ubuntu)">
+    Open a terminal and run:
+
+    ```bash
+    sudo apt update
+    sudo apt install python3 python3-pip python3-venv
+    ```
+  </TabItem>
+</Tabs>
+
+## Verify the installation
+
+Open a new terminal or command prompt and run:
+
+```bash
+python --version
+```
+
+<Aside type="note">
+  On macOS and Linux, you may need to run `python3 --version` instead.
+</Aside>
+
+You should see something like:
+
+```
+Python 3.13.0
+```
+
+Then verify pip is available:
+
+```bash
+pip --version
+```
+
+You should see a line like `pip 24.0 from ...`.
+
+<Aside type="tip">
+  If `python --version` returns something older than 3.8, or the command isn't recognised at all, your PATH is likely not set up correctly. On Windows, rerun the installer and make sure **"Add python.exe to PATH"** is ticked.
+</Aside>
+
+## Checklist
+
+- Python 3.8 or higher is installed
+- `python --version` works from any terminal window
+- `pip --version` works from any terminal window
+
+## Next
+
+Continue to [1.2 — Virtual environments](../1-2-virtual-environments/).

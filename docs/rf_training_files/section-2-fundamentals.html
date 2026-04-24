@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Robot Framework Basics — Section 2: Fundamentals</title>
+<style>
+    :root {
+        --bg: #ffffff;
+        --text: #1a1a2e;
+        --muted: #5a6270;
+        --accent: #0a2472;
+        --accent-light: #1e3a8a;
+        --border: #e1e4e8;
+        --code-bg: #f6f8fa;
+        --terminal-bg: #1e1e2e;
+        --terminal-text: #cdd6f4;
+        --terminal-prompt: #a6e3a1;
+        --terminal-comment: #6c7086;
+        --tip-bg: #fff8e1;
+        --tip-border: #f4c430;
+        --warn-bg: #fff1f2;
+        --warn-border: #e11d48;
+        --checklist-bg: #f0f4f8;
+
+        /* Robot Framework syntax colors */
+        --rf-section: #0550ae;
+        --rf-keyword: #7c3aed;
+        --rf-string: #116329;
+        --rf-variable: #bf4b0a;
+        --rf-comment: #6c7086;
+        --rf-argument: #24292f;
+
+        /* Shell syntax colors */
+        --sh-command: #0550ae;
+        --sh-flag: #7c3aed;
+        --sh-string: #116329;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.65;
+        color: var(--text);
+        background-color: var(--bg);
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem 4rem;
+    }
+
+    h1 {
+        font-size: 2.4rem;
+        color: var(--accent);
+        border-bottom: 3px solid var(--accent);
+        padding-bottom: 0.6rem;
+        margin-top: 2.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    h2 {
+        font-size: 1.6rem;
+        color: var(--accent-light);
+        margin-top: 2.5rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.4rem;
+    }
+
+    h3 {
+        font-size: 1.2rem;
+        color: var(--accent-light);
+        margin-top: 1.8rem;
+        margin-bottom: 0.8rem;
+    }
+
+    p { margin: 0.8rem 0; }
+
+    strong { color: var(--accent-light); }
+
+    ul, ol { margin: 0.8rem 0; padding-left: 1.8rem; }
+    li { margin: 0.4rem 0; }
+
+    /* Inline code */
+    code {
+        font-family: "SF Mono", Menlo, Consolas, "Courier New", monospace;
+        font-size: 0.9em;
+        background-color: var(--code-bg);
+        color: var(--accent);
+        padding: 0.15em 0.4em;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+    }
+
+    /* Code blocks - base */
+    pre {
+        font-family: "SF Mono", Menlo, Consolas, "Courier New", monospace;
+        font-size: 0.88em;
+        padding: 1rem 1.2rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 1rem 0;
+        line-height: 1.5;
+    }
+
+    pre code {
+        background: none;
+        color: inherit;
+        padding: 0;
+        border: none;
+        font-size: inherit;
+    }
+
+    /* Robot Framework code block */
+    pre.robot {
+        background-color: var(--code-bg);
+        border: 1px solid var(--border);
+        color: var(--rf-argument);
+    }
+
+    pre.robot .rf-section  { color: var(--rf-section); font-weight: 700; }
+    pre.robot .rf-setting  { color: var(--rf-keyword); font-weight: 600; }
+    pre.robot .rf-keyword  { color: var(--rf-keyword); font-weight: 600; }
+    pre.robot .rf-testname { color: var(--rf-section); font-weight: 600; }
+    pre.robot .rf-variable { color: var(--rf-variable); }
+    pre.robot .rf-string   { color: var(--rf-string); }
+    pre.robot .rf-comment  { color: var(--rf-comment); font-style: italic; }
+    pre.robot .rf-control  { color: #d73a49; font-weight: 700; }
+
+    /* Shell / terminal command block (light) */
+    pre.shell {
+        background-color: var(--code-bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+    }
+
+    pre.shell .sh-prompt  { color: var(--terminal-prompt); font-weight: 700; user-select: none; }
+    pre.shell .sh-command { color: var(--sh-command); font-weight: 600; }
+    pre.shell .sh-flag    { color: var(--sh-flag); }
+    pre.shell .sh-string  { color: var(--sh-string); }
+    pre.shell .sh-comment { color: var(--rf-comment); font-style: italic; }
+
+    /* Terminal output block (dark) */
+    pre.terminal {
+        background-color: var(--terminal-bg);
+        color: var(--terminal-text);
+        border: 1px solid #313244;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    pre.terminal .t-pass    { color: #a6e3a1; font-weight: 700; }
+    pre.terminal .t-fail    { color: #f38ba8; font-weight: 700; }
+    pre.terminal .t-header  { color: #89b4fa; }
+    pre.terminal .t-path    { color: #f9e2af; }
+    pre.terminal .t-info    { color: #cba6f7; }
+    pre.terminal .t-dim     { color: var(--terminal-comment); }
+    pre.terminal .t-divider { color: #585b70; }
+
+    /* Tables */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.2rem 0;
+        font-size: 0.95em;
+    }
+
+    th, td {
+        border: 1px solid var(--border);
+        padding: 0.6rem 0.9rem;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        background-color: var(--code-bg);
+        font-weight: 600;
+        color: var(--accent-light);
+    }
+
+    tr:nth-child(even) td { background-color: #fafbfc; }
+
+    table code {
+        font-size: 0.88em;
+        white-space: nowrap;
+    }
+
+    /* Tip callout */
+    .tip {
+        background-color: var(--tip-bg);
+        border-left: 4px solid var(--tip-border);
+        padding: 0.8rem 1.1rem;
+        margin: 1rem 0;
+        border-radius: 0 6px 6px 0;
+    }
+    .tip::before { content: "💡 "; }
+
+    /* Warning callout */
+    .warn {
+        background-color: var(--warn-bg);
+        border-left: 4px solid var(--warn-border);
+        padding: 0.8rem 1.1rem;
+        margin: 1rem 0;
+        border-radius: 0 6px 6px 0;
+    }
+    .warn::before { content: "⚠️ "; }
+
+    /* Collapsible section */
+    details {
+        margin: 1rem 0;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background-color: #fafbfc;
+    }
+
+    details[open] { background-color: #ffffff; }
+
+    summary {
+        cursor: pointer;
+        padding: 0.9rem 1.2rem;
+        font-weight: 600;
+        font-size: 1.05rem;
+        color: var(--accent-light);
+        list-style: none;
+        user-select: none;
+    }
+
+    summary::marker, summary::-webkit-details-marker { display: none; }
+
+    summary::before {
+        content: "▸";
+        display: inline-block;
+        margin-right: 0.6rem;
+        transition: transform 0.2s ease;
+        color: var(--accent);
+    }
+
+    details[open] summary::before { transform: rotate(90deg); }
+
+    details > *:not(summary) { padding: 0 1.2rem; }
+    details > *:last-child { padding-bottom: 1rem; }
+
+    /* Checklist */
+    .checklist {
+        background-color: var(--checklist-bg);
+        border-radius: 8px;
+        padding: 1rem 1.4rem;
+        margin: 1.2rem 0;
+    }
+
+    .checklist ul { list-style: none; padding-left: 0; }
+    .checklist li { margin: 0.5rem 0; padding-left: 1.8rem; position: relative; }
+    .checklist li::before {
+        content: "☐";
+        position: absolute;
+        left: 0;
+        font-size: 1.15em;
+        color: var(--accent);
+    }
+
+    /* Flipcards */
+    .flipcard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1rem;
+        margin: 1.2rem 0;
+    }
+
+    .flipcard {
+        perspective: 1000px;
+        height: 180px;
+    }
+
+    .flipcard-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        cursor: pointer;
+    }
+
+    .flipcard.flipped .flipcard-inner { transform: rotateY(180deg); }
+
+    .flipcard-front, .flipcard-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 10px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .flipcard-front {
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 1.05rem;
+    }
+
+    .flipcard-front code {
+        background-color: rgba(255,255,255,0.18);
+        color: #ffffff;
+        border: none;
+    }
+
+    .flipcard-back {
+        background-color: #ffffff;
+        border: 2px solid var(--accent);
+        color: var(--text);
+        transform: rotateY(180deg);
+        font-size: 0.92rem;
+        line-height: 1.4;
+    }
+
+    .flipcard-hint {
+        font-size: 0.85rem;
+        color: var(--muted);
+        font-style: italic;
+        margin: 0.3rem 0 0.8rem;
+    }
+
+    /* Exercise block */
+    .exercise {
+        background-color: #f0f7ff;
+        border-left: 4px solid var(--accent);
+        padding: 1rem 1.2rem;
+        margin: 1.2rem 0;
+        border-radius: 0 6px 6px 0;
+    }
+    .exercise h4 {
+        margin: 0 0 0.5rem 0;
+        color: var(--accent);
+        font-size: 1.1rem;
+    }
+
+    .difficulty { color: #f4c430; letter-spacing: 1px; }
+    .duration { color: var(--muted); font-size: 0.9em; font-weight: normal; }
+
+    /* Section separator */
+    hr {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 2.5rem 0;
+    }
+
+    /* Page title block */
+    .title-block {
+        padding: 1.5rem 0;
+        margin-bottom: 2rem;
+        border-bottom: 4px solid var(--accent);
+    }
+
+    .title-block h1 {
+        border: none;
+        padding: 0;
+        margin: 0;
+        font-size: 2.8rem;
+    }
+
+    .title-block .subtitle {
+        color: var(--muted);
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+    }
+
+    .objective {
+        background-color: #eef2ff;
+        border-radius: 8px;
+        padding: 0.9rem 1.2rem;
+        margin: 1.2rem 0;
+        font-size: 0.98rem;
+    }
+    .objective strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="title-block">
+    <h1>Section 2 — Robot Framework Fundamentals</h1>
+    <div class="subtitle">The mental model: files, tests, variables, and assertions</div>
+</div>
+
+<div class="objective">
+<strong>Learning objective:</strong> By the end of this section, you will understand the structure of a <code>.robot</code> file, be able to write and run simple test cases with variables and assertions, and have a working grasp of the most common control structures (IF, FOR, TRY).
+</div>
+
+<!-- ============================================================
+     CHAPTER 2.1 — ANATOMY OF A .robot FILE
+     ============================================================ -->
+
+<h1>Chapter 2.1 — Anatomy of a <code>.robot</code> file</h1>
+
+<p>A Robot Framework test file is just a plain text file with the extension <code>.robot</code>. Inside it, content is organised into <strong>sections</strong>, each introduced by a header that starts and ends with <code>***</code>.</p>
+
+<p>You will encounter four sections in nearly every file:</p>
+
+<table>
+<thead>
+<tr><th>Section</th><th>What it holds</th></tr>
+</thead>
+<tbody>
+<tr><td><code>*** Settings ***</code></td><td>Library imports, file-level documentation, suite setup/teardown</td></tr>
+<tr><td><code>*** Variables ***</code></td><td>Variables that are available to all tests in the file</td></tr>
+<tr><td><code>*** Test Cases ***</code></td><td>The actual tests</td></tr>
+<tr><td><code>*** Keywords ***</code></td><td>Reusable keywords that you define yourself</td></tr>
+</tbody>
+</table>
+
+<p>Here is a minimal but complete example. Every test suite you write will follow this same skeleton:</p>
+
+<pre class="robot"><code><span class="rf-section">*** Settings ***</span>
+<span class="rf-setting">Documentation</span>    Minimal example of a Robot Framework test file.
+<span class="rf-setting">Library</span>          Collections
+
+<span class="rf-section">*** Variables ***</span>
+<span class="rf-variable">${WAREHOUSE}</span>     Munich Distribution Center
+
+<span class="rf-section">*** Test Cases ***</span>
+<span class="rf-testname">Welcome To Warehouse</span>
+    <span class="rf-keyword">Greet Warehouse</span>
+    <span class="rf-keyword">Log</span>    Shift is starting
+
+<span class="rf-section">*** Keywords ***</span>
+<span class="rf-testname">Greet Warehouse</span>
+    <span class="rf-keyword">Log To Console</span>    Hello, <span class="rf-variable">${WAREHOUSE}</span>!</code></pre>
+
+<p>Notice how the test case <code>Welcome To Warehouse</code> calls the custom keyword <code>Greet Warehouse</code> — that's how the four sections fit together: settings configure the file, variables hold reusable values, the test case describes the scenario, and user-defined keywords keep the test readable.</p>
+
+<details open>
+<summary>The two-space separator rule</summary>
+
+<p>Robot Framework separates keywords from their arguments — and arguments from each other — with <strong>at least two spaces</strong>. This is probably the single most common source of beginner confusion.</p>
+
+<p>✅ Correct (two spaces between keyword and argument):</p>
+
+<pre class="robot"><code><span class="rf-keyword">Log</span>    Hello, world!</code></pre>
+
+<p>❌ Wrong (only one space — Robot Framework will think <code>Log Hello,</code> is the keyword name):</p>
+
+<pre class="robot"><code><span class="rf-keyword">Log</span> Hello, world!</code></pre>
+
+<div class="tip">Most IDEs (including VS Code with RobotCode) highlight this for you automatically. If a keyword turns red or autocomplete stops working, check your spacing first.</div>
+
+</details>
+
+<details open>
+<summary>Comments</summary>
+
+<p>Use <code>#</code> to add comments. Everything from <code>#</code> to the end of the line is ignored by Robot Framework.</p>
+
+<pre class="robot"><code><span class="rf-comment"># This whole line is a comment</span>
+<span class="rf-keyword">Log</span>    Hello    <span class="rf-comment"># You can also comment at the end of a line</span></code></pre>
+
+<p>Comments are often used to separate groups of related tests inside a <code>*** Test Cases ***</code> section:</p>
+
+<pre class="robot"><code><span class="rf-comment"># ============================================================
+# IF / ELSE tests
+# ============================================================</span></code></pre>
+
+</details>
+
+<h3>Checklist</h3>
+
+<div class="checklist">
+<ul>
+    <li>You can name the four main sections of a <code>.robot</code> file</li>
+    <li>You know that section headers must start and end with <code>***</code></li>
+    <li>You understand the two-space separator rule</li>
+    <li>You know how to add a comment with <code>#</code></li>
+</ul>
+</div>
+
+<hr>
+
+<!-- ============================================================
+     CHAPTER 2.2 — WRITING TEST CASES
+     ============================================================ -->
+
+<h1>Chapter 2.2 — Writing test cases</h1>
+
+<p>A test case in Robot Framework is simply a <strong>name</strong> followed by a list of <strong>steps</strong>. Each step is a call to a keyword, optionally with arguments.</p>
+
+<pre class="robot"><code><span class="rf-section">*** Test Cases ***</span>
+<span class="rf-testname">Warehouse Arrival Is Logged</span>
+    <span class="rf-keyword">Log</span>              Shift started at Munich DC
+    <span class="rf-keyword">Log To Console</span>   Ready for dock assignments</code></pre>
+
+<p>That's a complete, runnable test. The test name (<code>Warehouse Arrival Is Logged</code>) starts at column 1 — no indentation. The steps are indented with at least two spaces.</p>
+
+<details open>
+<summary>Test settings: Documentation and Tags</summary>
+
+<p>Each test can have settings that start with square brackets, placed <strong>immediately after the test name</strong>:</p>
+
+<pre class="robot"><code><span class="rf-section">*** Test Cases ***</span>
+<span class="rf-testname">Container Weight Is Within Limit</span>
+    <span class="rf-setting">[Documentation]</span>    Verifies that two containers do not exceed the vessel limit.
+    <span class="rf-setting">[Tags]</span>             warehouse    smoke
+    <span class="rf-keyword">Log</span>    Checking container weights...</code></pre>
+
+<ul>
+    <li><code>[Documentation]</code> — a short description that appears in the log and report</li>
+    <li><code>[Tags]</code> — labels you can later use to filter which tests to run (e.g. only <code>smoke</code> tests)</li>
+</ul>
+
+<div class="tip">Long documentation can span multiple lines using <code>...</code> as a continuation marker:
+<pre class="robot" style="margin-top:0.5rem;"><code>    <span class="rf-setting">[Documentation]</span>    This test verifies that two containers
+    <span class="rf-setting">...</span>                 do not exceed the vessel weight limit
+    <span class="rf-setting">...</span>                 of 25,000 kg.</code></pre>
+</div>
+
+</details>
+
+<details open>
+<summary>Your two workhorse logging keywords</summary>
+
+<p>Two built-in keywords will appear in almost every test you write:</p>
+
+<table>
+<thead>
+<tr><th>Keyword</th><th>Where the message goes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Log</code></td><td>Into <code>log.html</code> only (not visible on the console)</td></tr>
+<tr><td><code>Log To Console</code></td><td>Printed to the terminal immediately, visible as the test runs</td></tr>
+</tbody>
+</table>
+
+<p>Use <code>Log</code> for most diagnostic output — it keeps the terminal clean and makes the log file rich. Use <code>Log To Console</code> only when you specifically want to see something in real time while the test runs.</p>
+
+</details>
+
+<details open>
+<summary>Running a single test vs. a whole file</summary>
+
+<p>To run everything in a file:</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">robot</span> warehouse.robot</code></pre>
+
+<p>To run only one specific test case by name, use <code>-t</code>:</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">robot</span> <span class="sh-flag">-t</span> <span class="sh-string">"Container Weight Is Within Limit"</span> warehouse.robot</code></pre>
+
+<p>To put the log files in a dedicated folder instead of the current directory, use <code>-d</code>:</p>
+
+<pre class="shell"><code><span class="sh-prompt">$</span> <span class="sh-command">robot</span> <span class="sh-flag">-d</span> logs warehouse.robot</code></pre>
+
+</details>
+
+<h3>Checklist</h3>
+
+<div class="checklist">
+<ul>
+    <li>You can write a test case with a name and at least one step</li>
+    <li>You know how to add <code>[Documentation]</code> and <code>[Tags]</code> to a test</li>
+    <li>You know the difference between <code>Log</code> and <code>Log To Console</code></li>
+    <li>You can run a single test by name using <code>-t</code></li>
+</ul>
+</div>
+
+<hr>
+
+<!-- ============================================================
+     CHAPTER 2.3 — VARIABLES
+     ============================================================ -->
+
+<h1>Chapter 2.3 — Variables</h1>
+
+<p>Variables let you avoid repetition and write tests that are easier to read and maintain. Robot Framework has three variable types, distinguished by their prefix character:</p>
+
+<table>
+<thead>
+<tr><th>Prefix</th><th>Type</th><th>Example</th></tr>
+</thead>
+<tbody>
+<tr><td><code>$</code></td><td>Scalar (single value)</td><td><code>${warehouse}</code></td></tr>
+<tr><td><code>@</code></td><td>List</td><td><code>@{containers}</code></td></tr>
+<tr><td><code>&amp;</code></td><td>Dictionary</td><td><code>&amp;{shipment}</code></td></tr>
+</tbody>
+</table>
+
+<details open>
+<summary>Declaring variables with VAR</summary>
+
+<p>The modern way to create a variable inside a test is with the <code>VAR</code> keyword:</p>
+
+<pre class="robot"><code><span class="rf-control">VAR</span>    <span class="rf-variable">${warehouse}</span>     Munich DC
+<span class="rf-control">VAR</span>    <span class="rf-variable">@{containers}</span>    MRKU1234567    TCLU7654321
+<span class="rf-control">VAR</span>    <span class="rf-variable">&{shipment}</span>      origin=Munich    destination=Amsterdam
+
+<span class="rf-keyword">Log</span>    Shipping from <span class="rf-variable">${shipment}[origin]</span></code></pre>
+
+<p>You can also declare suite-level variables in the <code>*** Variables ***</code> section, so they're available to every test in the file:</p>
+
+<pre class="robot"><code><span class="rf-section">*** Variables ***</span>
+<span class="rf-variable">${WAREHOUSE}</span>      Munich DC
+<span class="rf-variable">@{CONTAINERS}</span>     MRKU1234567    TCLU7654321
+<span class="rf-variable">&{SHIPMENT}</span>       origin=Munich    destination=Amsterdam</code></pre>
+
+<div class="tip">By convention, suite-level variables are written in <code>UPPERCASE</code>, while test-local variables (declared with <code>VAR</code>) are <code>lowercase</code>. This makes scope visible at a glance.</div>
+
+</details>
+
+<details open>
+<summary>Gotcha: variables are strings by default</summary>
+
+<div class="warn">This is the single most common source of confusion when starting out with Robot Framework. Read this chapter carefully.</div>
+
+<p>By default, Robot Framework treats every variable as a <strong>string</strong> — even if you wrote what looks like a number:</p>
+
+<pre class="robot"><code><span class="rf-control">VAR</span>    <span class="rf-variable">${weight}</span>    8200
+
+<span class="rf-comment"># This passes — both are the STRING "8200"</span>
+<span class="rf-keyword">Should Be Equal</span>    <span class="rf-variable">${weight}</span>    8200
+
+<span class="rf-comment"># This FAILS — you can't add a number to a string!</span>
+<span class="rf-variable">${total}</span>    <span class="rf-keyword">Evaluate</span>    <span class="rf-variable">${weight}</span> + 1000</code></pre>
+
+<p>The fix is <strong>typed variables</strong>. Add a type annotation after the variable name:</p>
+
+<pre class="robot"><code><span class="rf-control">VAR</span>    <span class="rf-variable">${weight: int}</span>    8200
+
+<span class="rf-comment"># Now ${weight} is a real integer</span>
+<span class="rf-variable">${total}</span>    <span class="rf-keyword">Evaluate</span>    <span class="rf-variable">${weight}</span> + 1000
+<span class="rf-keyword">Should Be Equal As Integers</span>    <span class="rf-variable">${total}</span>    9200</code></pre>
+
+<p>Common types you'll use:</p>
+
+<table>
+<thead>
+<tr><th>Type</th><th>Example</th></tr>
+</thead>
+<tbody>
+<tr><td><code>int</code></td><td><code>VAR ${count: int} 42</code></td></tr>
+<tr><td><code>float</code></td><td><code>VAR ${price: float} 19.99</code></td></tr>
+<tr><td><code>bool</code></td><td><code>VAR ${active: bool} True</code></td></tr>
+<tr><td><code>str</code></td><td><code>VAR ${name: str} Alice</code></td></tr>
+<tr><td><code>dict</code></td><td><code>VAR ${data: dict} {"key": "value"}</code></td></tr>
+</tbody>
+</table>
+
+<p>You can also force a single value into a number inline by writing it as <code>${8200}</code> (with curly braces around the number). This is common in lists:</p>
+
+<pre class="robot"><code><span class="rf-variable">@{weights}</span>    <span class="rf-keyword">Create List</span>    <span class="rf-variable">${8200}</span>    <span class="rf-variable">${12400}</span>    <span class="rf-variable">${3000}</span></code></pre>
+
+</details>
+
+<details open>
+<summary>Built-in variables worth knowing</summary>
+
+<p>Robot Framework provides a handful of useful built-in variables you don't need to declare:</p>
+
+<table>
+<thead>
+<tr><th>Variable</th><th>What it is</th></tr>
+</thead>
+<tbody>
+<tr><td><code>${TRUE}</code> / <code>${FALSE}</code></td><td>Boolean values</td></tr>
+<tr><td><code>${NONE}</code></td><td>Python's <code>None</code> — useful for "not set yet"</td></tr>
+<tr><td><code>${EMPTY}</code></td><td>An empty string (more readable than just nothing)</td></tr>
+<tr><td><code>${CURDIR}</code></td><td>The folder the current <code>.robot</code> file lives in</td></tr>
+<tr><td><code>${OUTPUT_DIR}</code></td><td>The folder where test artefacts are written (set via <code>-d</code>)</td></tr>
+<tr><td><code>${/}</code></td><td>OS-appropriate path separator (<code>/</code> or <code>\</code>)</td></tr>
+</tbody>
+</table>
+
+<p>Example — reading a test data file that lives next to your test:</p>
+
+<pre class="robot"><code><span class="rf-variable">${shipment}</span>    <span class="rf-keyword">Get File</span>    <span class="rf-variable">${CURDIR}</span>/transport_event.json</code></pre>
+
+</details>
+
+<details open>
+<summary>Lists and dictionaries in action</summary>
+
+<p>There are three ways to build lists and dictionaries. They produce the same result — pick the one that fits where you are in your test.</p>
+
+<pre class="robot"><code><span class="rf-comment"># (1) Inline literal — only works in the *** Variables *** section</span>
+<span class="rf-variable">@{containers}</span>    MRKU1234567    TCLU7654321    MSKU9988776
+<span class="rf-variable">&{shipment}</span>      origin=Munich    destination=Amsterdam    weight=<span class="rf-variable">${8200}</span>
+
+<span class="rf-comment"># (2) VAR syntax — works anywhere (inside a test or a keyword)</span>
+<span class="rf-control">VAR</span>    <span class="rf-variable">@{containers}</span>    MRKU1234567    TCLU7654321    MSKU9988776
+<span class="rf-control">VAR</span>    <span class="rf-variable">&{shipment}</span>      origin=Munich    destination=Amsterdam    weight=<span class="rf-variable">${8200}</span>
+
+<span class="rf-comment"># (3) Create List / Create Dictionary keywords (the traditional style)</span>
+<span class="rf-variable">@{containers}</span>    <span class="rf-keyword">Create List</span>          MRKU1234567    TCLU7654321    MSKU9988776
+<span class="rf-variable">&{shipment}</span>      <span class="rf-keyword">Create Dictionary</span>    origin=Munich    destination=Amsterdam    weight=<span class="rf-variable">${8200}</span></code></pre>
+
+<div class="tip"><strong>Prefer <code>VAR</code></strong> for anything declared inside a test or keyword. It reads consistently with scalar declarations and — unlike inline literals or <code>Create List</code> — supports an optional <code>scope=</code> parameter:
+
+<pre class="robot" style="margin-top:0.5rem;"><code><span class="rf-control">VAR</span>    <span class="rf-variable">${local_var}</span>    local value              scope=LOCAL
+<span class="rf-control">VAR</span>    <span class="rf-variable">${test_var}</span>     shared within test       scope=TEST
+<span class="rf-control">VAR</span>    <span class="rf-variable">${suite_var}</span>    shared across suite      scope=SUITE</code></pre>
+
+Available scopes are <code>LOCAL</code> (default), <code>TEST</code>, <code>SUITE</code>, <code>SUITES</code>, and <code>GLOBAL</code>. This replaces the older family of <code>Set Variable</code>, <code>Set Test Variable</code>, <code>Set Suite Variable</code>, etc., with one consistent syntax. See the <a href="https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#var-syntax">VAR syntax section of the User Guide</a> for full details.</div>
+
+<p>Accessing values:</p>
+
+<pre class="robot"><code><span class="rf-comment"># List access by index (zero-based)</span>
+<span class="rf-keyword">Log</span>    <span class="rf-variable">${containers}[0]</span>      <span class="rf-comment"># MRKU1234567</span>
+
+<span class="rf-comment"># Dictionary access by key</span>
+<span class="rf-keyword">Log</span>    <span class="rf-variable">${shipment}[origin]</span>    <span class="rf-comment"># Munich</span></code></pre>
+
+</details>
+
+<h3>Checklist</h3>
+
+<div class="checklist">
+<ul>
+    <li>You can declare scalar, list, and dictionary variables using <code>VAR</code></li>
+    <li>You know that variables are strings by default, and how typed variables fix that</li>
+    <li>You can access list items by index and dict values by key</li>
+    <li>You know what <code>${CURDIR}</code> and <code>${OUTPUT_DIR}</code> refer to</li>
+</ul>
+</div>
+
+<hr>
+
+<!-- ============================================================
+     CHAPTER 2.4 — BASIC ASSERTIONS
+     ============================================================ -->
+
+<h1>Chapter 2.4 — Basic assertions</h1>
+
+<p>A test without assertions isn't really a test — it's just a script. Assertions are the keywords that <strong>check your expectations</strong> and cause the test to fail if those expectations aren't met.</p>
+
+<p>Robot Framework's <code>BuiltIn</code> library (which is always imported automatically) provides dozens of assertion keywords. In practice, you'll use just a handful most of the time.</p>
+
+<h3>The four you'll use 90% of the time</h3>
+
+<table>
+<thead>
+<tr><th>Keyword</th><th>What it does</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Should Be Equal</code></td><td>Assert two values are equal</td></tr>
+<tr><td><code>Should Be True</code></td><td>Assert a condition (Python expression) is true</td></tr>
+<tr><td><code>Should Contain</code></td><td>Assert a string/list/dict contains a value</td></tr>
+<tr><td><code>Length Should Be</code></td><td>Assert a list or string has an expected length</td></tr>
+</tbody>
+</table>
+
+<p>A full example using each:</p>
+
+<pre class="robot"><code><span class="rf-section">*** Test Cases ***</span>
+<span class="rf-testname">Shipment Meets Requirements</span>
+    <span class="rf-control">VAR</span>    <span class="rf-variable">${origin}</span>        Munich
+    <span class="rf-control">VAR</span>    <span class="rf-variable">${weight: int}</span>   8200
+    <span class="rf-variable">@{containers}</span>    <span class="rf-keyword">Create List</span>    MRKU1234567    TCLU7654321
+
+    <span class="rf-keyword">Should Be Equal</span>      <span class="rf-variable">${origin}</span>         Munich
+    <span class="rf-keyword">Should Be True</span>       <span class="rf-variable">${weight}</span> &lt; 25000
+    <span class="rf-keyword">Should Contain</span>       <span class="rf-variable">${containers}</span>     MRKU1234567
+    <span class="rf-keyword">Length Should Be</span>     <span class="rf-variable">${containers}</span>     2</code></pre>
+
+<details open>
+<summary>When Should Be Equal lies to you</summary>
+
+<p>Remember the string-by-default gotcha from the previous chapter? It affects assertions too:</p>
+
+<pre class="robot"><code><span class="rf-variable">${answer}</span>    <span class="rf-keyword">Evaluate</span>    100 + 23
+
+<span class="rf-comment"># ${answer} is the integer 123
+# "123" is the string "123"
+# These are NOT equal!</span>
+<span class="rf-keyword">Should Be Equal</span>              <span class="rf-variable">${answer}</span>    123    <span class="rf-comment"># FAILS</span>
+
+<span class="rf-comment"># Use the type-aware variant instead:</span>
+<span class="rf-keyword">Should Be Equal As Integers</span>   <span class="rf-variable">${answer}</span>    123    <span class="rf-comment"># PASSES</span></code></pre>
+
+<p>Related variants you'll occasionally need:</p>
+
+<ul>
+    <li><code>Should Be Equal As Integers</code></li>
+    <li><code>Should Be Equal As Numbers</code> (handles floats)</li>
+    <li><code>Should Be Equal As Strings</code></li>
+</ul>
+
+</details>
+
+<details open>
+<summary>Negative assertions</summary>
+
+<p>Most assertion keywords have a <code>Should Not</code> counterpart:</p>
+
+<pre class="robot"><code><span class="rf-keyword">Should Not Be Equal</span>    <span class="rf-variable">${status}</span>    FAILED
+<span class="rf-keyword">Should Not Contain</span>     <span class="rf-variable">${shipment}</span>    tracking_id
+<span class="rf-keyword">Should Not Be Empty</span>    <span class="rf-variable">${containers}</span></code></pre>
+
+</details>
+
+<h3>Checklist</h3>
+
+<div class="checklist">
+<ul>
+    <li>You know the four most common assertion keywords</li>
+    <li>You know when to use <code>Should Be Equal As Integers</code> instead of <code>Should Be Equal</code></li>
+    <li>You know that most assertions have a <code>Should Not</code> counterpart</li>
+</ul>
+</div>
+
+<hr>
+
+<!-- ============================================================
+     CHAPTER 2.5 — CONTROL STRUCTURES
+     ============================================================ -->
+
+<h1>Chapter 2.5 — Control structures (a brief tour)</h1>
+
+<p>Robot Framework supports the control structures you'd expect from a modern programming language: conditionals, loops, and error handling. This chapter is a <strong>brief tour</strong> — just enough to recognise each one and write basic versions yourself. For the full range of options (WHILE loops, ELSE IF chains, BREAK/CONTINUE, pattern matching in EXCEPT, etc.), see the <a href="https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html">Robot Framework User Guide</a>.</p>
+
+<details open>
+<summary>IF / ELSE</summary>
+
+<p>Conditional logic uses <code>IF</code>, <code>ELSE</code>, and the mandatory <code>END</code>:</p>
+
+<pre class="robot"><code><span class="rf-control">IF</span>    <span class="rf-variable">${weight}</span> &gt; 25000
+    <span class="rf-keyword">Log</span>    Overweight — split the shipment
+<span class="rf-control">ELSE</span>
+    <span class="rf-keyword">Log</span>    OK to load
+<span class="rf-control">END</span></code></pre>
+
+<p>For a single short action, Robot Framework also supports an inline form:</p>
+
+<pre class="robot"><code><span class="rf-control">IF</span>    <span class="rf-variable">${hazardous}</span>    <span class="rf-keyword">Log</span>    ⚠ Hazardous cargo</code></pre>
+
+</details>
+
+<details open>
+<summary>FOR loops</summary>
+
+<p><code>FOR</code> iterates over a list of values. The syntax is <code>FOR ... IN ... END</code>:</p>
+
+<pre class="robot"><code><span class="rf-control">FOR</span>    <span class="rf-variable">${container}</span>    <span class="rf-control">IN</span>    <span class="rf-variable">@{containers}</span>
+    <span class="rf-keyword">Log</span>    Inspecting <span class="rf-variable">${container}</span>
+<span class="rf-control">END</span></code></pre>
+
+<p>For a fixed number of iterations, use <code>IN RANGE</code>:</p>
+
+<pre class="robot"><code><span class="rf-control">FOR</span>    <span class="rf-variable">${dock}</span>    <span class="rf-control">IN RANGE</span>    1    11
+    <span class="rf-keyword">Log</span>    Dock <span class="rf-variable">${dock}</span> ready
+<span class="rf-control">END</span></code></pre>
+
+</details>
+
+<details open>
+<summary>TRY / EXCEPT — error handling</summary>
+
+<p>When a keyword fails, Robot Framework normally stops the test. <code>TRY / EXCEPT</code> lets you catch the failure and continue:</p>
+
+<pre class="robot"><code><span class="rf-control">TRY</span>
+    <span class="rf-keyword">Parse Xml</span>    broken.xml
+<span class="rf-control">EXCEPT</span>
+    <span class="rf-keyword">Log</span>    XML file was invalid — using defaults
+<span class="rf-control">END</span></code></pre>
+
+<p>You can also add a <code>FINALLY</code> block that always runs (useful for cleanup):</p>
+
+<pre class="robot"><code><span class="rf-control">TRY</span>
+    <span class="rf-keyword">Submit Customs Clearance</span>
+<span class="rf-control">EXCEPT</span>
+    <span class="rf-keyword">Log</span>    Clearance failed — will retry later
+<span class="rf-control">FINALLY</span>
+    <span class="rf-keyword">Log</span>    Clearance attempt recorded in audit log
+<span class="rf-control">END</span></code></pre>
+
+</details>
+
+<div class="tip">Everything above can be combined — loops inside conditionals, TRY inside loops, and so on. Robot Framework also supports <code>WHILE</code>, <code>BREAK</code>, <code>CONTINUE</code>, and <code>ELSE IF</code> chains, which are covered in the User Guide. You'll rarely need them for simple tests.</div>
+
+<h3>Checklist</h3>
+
+<div class="checklist">
+<ul>
+    <li>You can write an <code>IF / ELSE / END</code> block</li>
+    <li>You can write a <code>FOR</code> loop over a list and over a range</li>
+    <li>You know how to catch a failure with <code>TRY / EXCEPT</code></li>
+    <li>You know that all control structures require a closing <code>END</code></li>
+</ul>
+</div>
+
+<hr>
+
+<!-- ============================================================
+     HANDS-ON EXERCISES
+     ============================================================ -->
+
+<h1>Hands-on exercises</h1>
+
+<p>These exercises give you a chance to practise what you've learnt on a realistic logistics scenario. Templates and solutions are available in the course repository.</p>
+
+<div class="exercise">
+<h4>Exercise 2.1 — Warehouse Welcome &nbsp;<span class="difficulty">★☆☆</span> &nbsp;<span class="duration">~5 min</span></h4>
+
+<p>You've arrived for your first shift at the Munich Distribution Center. Log your arrival and assert the message is correct.</p>
+
+<p><strong>Your task:</strong></p>
+
+<ol>
+    <li>Create a file <code>warehouse_welcome.robot</code>.</li>
+    <li>Write a test case called <code>Log Warehouse Arrival</code>.</li>
+    <li>Create a variable <code>${ARRIVAL_MSG}</code> with the text <code>"&lt;your-name&gt; reporting to Munich DC"</code>.</li>
+    <li>Log the message to both the Robot log and the console.</li>
+    <li>Assert that <code>${ARRIVAL_MSG}</code> is not empty.</li>
+    <li>Run the test: <code>robot -d logs warehouse_welcome.robot</code></li>
+    <li>Open <code>logs/log.html</code> and verify your message appears.</li>
+</ol>
+
+<p><strong>Keywords to use:</strong> <code>Log</code>, <code>Log To Console</code>, <code>VAR</code>, <code>Should Not Be Empty</code></p>
+</div>
+
+<div class="exercise">
+<h4>Exercise 2.2 — Shipment Inspector &nbsp;<span class="difficulty">★★☆</span> &nbsp;<span class="duration">~10 min</span></h4>
+
+<p>A new shipment has arrived. Build a dictionary with its details, flag it if it's hazardous, and iterate over all its fields.</p>
+
+<p><strong>Your task:</strong></p>
+
+<ol>
+    <li>Create a file <code>shipment_inspector.robot</code>. Import the <code>Collections</code> library.</li>
+    <li>Write a test case called <code>Inspect Shipment</code>.</li>
+    <li>Build a dictionary <code>&amp;{SHIPMENT}</code> with these keys:
+        <ul>
+            <li><code>origin</code> = <code>Munich</code></li>
+            <li><code>destination</code> = <code>Amsterdam</code></li>
+            <li><code>weight_kg</code> = <code>${8200}</code></li>
+            <li><code>hazardous</code> = <code>${FALSE}</code></li>
+        </ul>
+    </li>
+    <li>Assert the dictionary <strong>contains</strong> <code>origin</code> but does <strong>not contain</strong> <code>tracking_id</code>.</li>
+    <li>Use an <code>IF</code> statement: if hazardous, log a warning; otherwise, log <code>"Standard cargo"</code>.</li>
+    <li>Add <code>tracking_id=SHP-2026-0042</code> to the dictionary using <code>Set To Dictionary</code>.</li>
+    <li>Loop over all key-value pairs with <code>FOR ${k} ${v} IN &amp;{SHIPMENT}</code> and log each.</li>
+</ol>
+
+<p><strong>Keywords to use:</strong> <code>Create Dictionary</code>, <code>Should Contain</code>, <code>Should Not Contain</code>, <code>Set To Dictionary</code>, <code>IF / ELSE / END</code>, <code>FOR / IN / END</code></p>
+</div>
+
+<hr>
+
+<!-- ============================================================
+     FLIPCARDS
+     ============================================================ -->
+
+<h1>Section 2 — Flipcards</h1>
+<p class="flipcard-hint">Click any card to flip it.</p>
+
+<div class="flipcard-grid">
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>*** Settings ***</code></div>
+        <div class="flipcard-back">Section for library imports, file-level documentation, and suite-level setup/teardown.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>*** Test Cases ***</code></div>
+        <div class="flipcard-back">Section that contains one or more test cases. Each test is a name followed by indented steps.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Two-space separator</div>
+        <div class="flipcard-back">Keywords and their arguments (and arguments from each other) are separated by <strong>at least two spaces</strong>. One space is not enough.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>[Documentation]</code></div>
+        <div class="flipcard-back">A test-level setting that adds a description, shown in the log and report. Can span multiple lines using <code>...</code>.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>[Tags]</code></div>
+        <div class="flipcard-back">Labels attached to a test. Used with <code>--include</code> / <code>--exclude</code> to filter which tests to run.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>VAR</code></div>
+        <div class="flipcard-back">The modern keyword for declaring variables inline inside a test or keyword. Works with scalars, lists, and dictionaries.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Scalar / List / Dict <br><code>${x}  @{x}  &amp;{x}</code></div>
+        <div class="flipcard-back">The three variable types, identified by prefix. <code>$</code> for a single value, <code>@</code> for a list, <code>&amp;</code> for a dictionary.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Typed Variable <br><code>${x: int}</code></div>
+        <div class="flipcard-back">A variable declared with a type annotation so it isn't treated as a string. Common types: <code>int</code>, <code>float</code>, <code>bool</code>, <code>str</code>, <code>dict</code>.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>${CURDIR}</code></div>
+        <div class="flipcard-back">Built-in variable pointing to the folder the current <code>.robot</code> file lives in. Handy for loading test data files that sit next to your tests.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>${OUTPUT_DIR}</code></div>
+        <div class="flipcard-back">Built-in variable pointing to the folder where test artefacts (log, report, files created during the run) are written. Controlled via the <code>-d</code> CLI flag.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front">Assertion</div>
+        <div class="flipcard-back">A keyword that checks an expectation and fails the test if the check doesn't hold. Most start with <code>Should...</code> — e.g. <code>Should Be Equal</code>, <code>Should Contain</code>.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>Should Be Equal As Integers</code></div>
+        <div class="flipcard-back">Numeric comparison that converts both sides to integers before comparing. Needed because plain <code>Should Be Equal</code> treats values as strings.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>IF / ELSE / END</code></div>
+        <div class="flipcard-back">Conditional block. The <code>END</code> is mandatory. An inline form exists for single-action conditions.</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>FOR / IN / END</code></div>
+        <div class="flipcard-back">Loop over a list of values. Variants: <code>IN</code> (explicit list), <code>IN RANGE</code> (fixed count), <code>IN ENUMERATE</code> (index + value).</div>
+    </div></div>
+    <div class="flipcard" onclick="this.classList.toggle('flipped')"><div class="flipcard-inner">
+        <div class="flipcard-front"><code>TRY / EXCEPT / END</code></div>
+        <div class="flipcard-back">Error handling block. Catches keyword failures so the test can continue. Optional <code>FINALLY</code> runs in both success and failure cases.</div>
+    </div></div>
+</div>
+
+<hr>
+
+<h3>End of Section 2</h3>
+
+<div class="objective">
+<strong>What's next:</strong> Section 3 — File Operations. You'll learn to read and write plain text, XML, and JSON files using built-in libraries — a practical skill you'll use in almost every real-world test project.
+</div>
+
+</body>
+</html>

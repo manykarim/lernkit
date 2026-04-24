@@ -1,0 +1,81 @@
+---
+title: "2.4 — Basic assertions"
+description: The four assertions you'll use 90% of the time, plus the type-aware variants that save you from the string-by-default trap.
+objectives:
+  - Use `Should Be Equal`, `Should Be True`, `Should Contain`, `Length Should Be`
+  - Choose `Should Be Equal As Integers` over `Should Be Equal` for numeric comparisons
+  - Use `Should Not` variants for negative assertions
+estimatedMinutes: 8
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+A test without assertions isn't really a test — it's just a script. Assertions are the keywords that **check your expectations** and cause the test to fail if those expectations aren't met.
+
+Robot Framework's `BuiltIn` library (which is always imported automatically) provides dozens of assertion keywords. In practice, you'll use just a handful most of the time.
+
+## The four you'll use 90% of the time
+
+| Keyword | What it does |
+|---|---|
+| `Should Be Equal` | Assert two values are equal |
+| `Should Be True` | Assert a condition (Python expression) is true |
+| `Should Contain` | Assert a string/list/dict contains a value |
+| `Length Should Be` | Assert a list or string has an expected length |
+
+A full example using each:
+
+```robot
+*** Test Cases ***
+Shipment Meets Requirements
+    VAR    ${origin}        Munich
+    VAR    ${weight: int}   8200
+    @{containers}    Create List    MRKU1234567    TCLU7654321
+
+    Should Be Equal      ${origin}         Munich
+    Should Be True       ${weight} < 25000
+    Should Contain       ${containers}     MRKU1234567
+    Length Should Be     ${containers}     2
+```
+
+## When `Should Be Equal` lies to you
+
+Remember the string-by-default gotcha from the previous chapter? It affects assertions too:
+
+```robot
+${answer}    Evaluate    100 + 23
+
+# ${answer} is the integer 123
+# "123" is the string "123"
+# These are NOT equal!
+Should Be Equal              ${answer}    123    # FAILS
+
+# Use the type-aware variant instead:
+Should Be Equal As Integers  ${answer}    123    # PASSES
+```
+
+Related variants you'll occasionally need:
+
+- `Should Be Equal As Integers`
+- `Should Be Equal As Numbers` (handles floats)
+- `Should Be Equal As Strings`
+
+## Negative assertions
+
+Most assertion keywords have a `Should Not` counterpart:
+
+```robot
+Should Not Be Equal    ${status}       FAILED
+Should Not Contain     ${shipment}     tracking_id
+Should Not Be Empty    ${containers}
+```
+
+## Checklist
+
+- You know the four most common assertion keywords
+- You know when to use `Should Be Equal As Integers` instead of `Should Be Equal`
+- You know that most assertions have a `Should Not` counterpart
+
+## Next
+
+[2.5 — Control structures](../2-5-control-structures/).

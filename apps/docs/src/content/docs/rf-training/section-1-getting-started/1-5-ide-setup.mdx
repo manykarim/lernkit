@@ -1,0 +1,118 @@
+---
+title: "1.5 — Set up your IDE"
+description: Configure VS Code with the RobotCode extension for syntax highlighting, debugging, and Test Explorer integration.
+objectives:
+  - Install VS Code and the RobotCode extension
+  - Point VS Code at the project's Python interpreter
+  - Run and debug Robot Framework tests from the Test Explorer
+estimatedMinutes: 12
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+For Robot Framework, the recommended setup is **Visual Studio Code (VS Code)** with the **RobotCode** extension.
+
+## Why RobotCode?
+
+All-in-one Robot Framework support: syntax highlighting, autocompletion, go-to-definition, hover docs, Test Explorer integration, full debugger, and the Robotidy formatter. It's the actively-maintained successor to older extensions.
+
+## Install VS Code
+
+<Tabs syncKey="os">
+  <TabItem label="Windows / macOS / Linux — download">
+    Download from [code.visualstudio.com](https://code.visualstudio.com) and install.
+  </TabItem>
+  <TabItem label="macOS — Homebrew">
+    ```bash
+    brew install --cask visual-studio-code
+    ```
+  </TabItem>
+  <TabItem label="Linux (Debian/Ubuntu)">
+    ```bash
+    sudo apt install code
+    ```
+  </TabItem>
+</Tabs>
+
+## Install the RobotCode extension
+
+1. Open VS Code
+2. Open Extensions (`Ctrl+Shift+X` / `Cmd+Shift+X`)
+3. Search for **RobotCode**
+4. Click **Install** on the extension by *d-biehl*
+
+<Aside type="tip">
+  RobotCode auto-installs the Python extension as a dependency.
+</Aside>
+
+## Open your project folder
+
+**File → Open Folder…** and select your `my-rf-tests` folder. Opening the folder (not a single file) lets RobotCode read your Python environment and all your `.robot` files correctly.
+
+## Select the correct Python interpreter
+
+1. Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
+2. **Python: Select Interpreter**
+3. Choose the `.venv` interpreter:
+   - Windows: `.\.venv\Scripts\python.exe`
+   - macOS/Linux: `./.venv/bin/python`
+
+## Verify syntax highlighting and autocompletion
+
+Open your `first_test.robot` file — you should see coloured keywords, autocompletion when typing, and hover tooltips on `Log To Console` / `Should Be Equal`.
+
+## Run tests from the Test Explorer
+
+1. Click the flask icon in the sidebar (Testing panel)
+2. Click ▶ next to any test to run, or 🐞 to debug
+
+## Debug with breakpoints
+
+1. Click in the gutter left of a line number (red dot = breakpoint)
+2. Click 🐞 on the test in the Testing panel
+3. Inspect variables, step through, evaluate expressions in the debugger
+
+## Format code with Robotidy
+
+- Format on demand: `Shift+Alt+F` / `Shift+Option+F`
+- Format on save, add to `settings.json`:
+
+```json
+{
+  "[robotframework]": {
+    "editor.defaultFormatter": "d-biehl.robotcode",
+    "editor.formatOnSave": true
+  }
+}
+```
+
+## Useful keyboard shortcuts
+
+| Action | Windows/Linux | macOS |
+|---|---|---|
+| Command Palette | `Ctrl+Shift+P` | `Cmd+Shift+P` |
+| Go to Definition | `F12` | `F12` |
+| Find All References | `Shift+F12` | `Shift+F12` |
+| Rename Symbol | `F2` | `F2` |
+| Format Document | `Shift+Alt+F` | `Shift+Option+F` |
+
+## Recommended companion extensions
+
+- **Python** (Microsoft) — auto-installed with RobotCode
+- **Even Better TOML** — for `pyproject.toml` editing
+- **GitLens** — enhanced Git integration
+- **Error Lens** — inline error/warning display
+
+## Checklist
+
+- VS Code installed
+- RobotCode extension installed and enabled
+- Project folder opened as workspace
+- Python interpreter set to `.venv`
+- Syntax highlighting works on `.robot` files
+- Test Explorer shows your tests
+- ▶ button runs a test with green ✔
+
+## Next
+
+[Section 1 review](../review/) — flipcards and a short quiz to lock in the concepts, then on to Section 2.

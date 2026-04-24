@@ -13,7 +13,9 @@
     "typecheck": "astro check",
     "clean": "rm -rf dist .astro dist-packages public/pyodide",
     "package:scorm12": "node scripts/package-scorm12.mjs",
-    "build:scorm12": "pnpm build && pnpm package:scorm12"
+    "package:scorm12:rf-training": "COURSE_ROOT_DIR=rf-training COURSE_ID=rf-training COURSE_TITLE='Robot Framework Training' COURSE_DESCRIPTION='A Lernkit-authored course covering Robot Framework from zero to writing real tests.' COURSE_MASTERY_SCORE=0.7 node scripts/package-scorm12.mjs",
+    "build:scorm12": "pnpm build && pnpm package:scorm12",
+    "build:scorm12:rf-training": "pnpm build && pnpm package:scorm12:rf-training"
   },
   "dependencies": {
     "@astrojs/check": "0.9.4",
