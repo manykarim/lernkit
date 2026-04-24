@@ -15,6 +15,14 @@
  *     COURSE_MASTERY_SCORE=0.7 \
  *     node scripts/package-scorm12.mjs
  *
+ * Optional flag: INCLUDE_PYODIDE_RUNTIME=1
+ *   When set, the packager also bundles `dist/pyodide/` (Pyodide core + any
+ *   RF wheels in `pyodide/wheels/`) into the zip as shared assets. Required
+ *   for SCORM courses that contain <RunnablePython> or <RunnableRobot> cells
+ *   and will be delivered to an LMS that has no network access to the
+ *   hosted origin (offline-capable SCORM delivery). Adds ~13-14 MB to the
+ *   final zip.
+ *
  * Lesson discovery recurses through `dist/<COURSE_ROOT_DIR>/` looking for every
  * `index.html`. Lesson IDs are derived from the relative directory path so a
  * nested course (like rf-training with section-N subfolders) keeps its ordering
@@ -46,8 +54,15 @@ const COURSE_MASTERY_SCORE = process.env.COURSE_MASTERY_SCORE
   ? Number.parseFloat(process.env.COURSE_MASTERY_SCORE)
   : 0.8;
 const COURSE_VERSION = process.env.COURSE_VERSION ?? null; // fallback = app version
+const INCLUDE_PYODIDE_RUNTIME = isTruthy(process.env.INCLUDE_PYODIDE_RUNTIME);
 
 const outDir = join(appRoot, 'dist-packages', 'scorm12');
+
+function isTruthy(v) {
+  if (!v) return false;
+  const s = String(v).trim().toLowerCase();
+  return s === '1' || s === 'true' || s === 'yes' || s === 'on';
+}
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, 'utf8'));
@@ -106,9 +121,31 @@ async function discoverLessons() {
 
   const sharedAstroDir = join(distDir, '_astro');
   const sharedExists = await stat(sharedAstroDir).catch(() => null);
-  const sharedFiles = sharedExists
+  const sharedAstroFiles = sharedExists
     ? await walkFiles(sharedAstroDir).then((xs) => xs.map((x) => `_astro/${x}`))
     : [];
+
+  // Optionally bundle the Pyodide runtime (ADR 0006) so the SCORM zip is
+  // self-contained for offline LMS delivery. Adds ~13-14 MB to the zip.
+  const sharedPyodideFiles = [];
+  let pyodideBytes = 0;
+  if (INCLUDE_PYODIDE_RUNTIME) {
+    const pyodideDir = join(distDir, 'pyodide');
+    const pyodideExists = await stat(pyodideDir).catch(() => null);
+    if (!pyodideExists?.isDirectory()) {
+      throw new Error(
+        `INCLUDE_PYODIDE_RUNTIME=1 but ${pyodideDir} does not exist. ` +
+          'Did you run the Astro build (which runs copy-pyodide.mjs via prebuild)?',
+      );
+    }
+    const files = await walkFiles(pyodideDir);
+    for (const f of files) {
+      sharedPyodideFiles.push(`pyodide/${f}`);
+      pyodideBytes += (await stat(join(pyodideDir, f))).size;
+    }
+  }
+
+  const sharedFiles = [...sharedAstroFiles, ...sharedPyodideFiles];
 
   // Include the course root itself if it has an index.html (course overview page).
   const rootIdx = join(courseRoot, 'index.html');
@@ -170,6 +207,7 @@ async function main() {
   console.log(`  root:     dist/${COURSE_ROOT_DIR}/`);
   console.log(`  lessons:  ${lessons.length}`);
   console.log(`  entries:  ${result.entries.length}`);
+  console.log(`  pyodide:  ${INCLUDE_PYODIDE_RUNTIME ? 'bundled' : 'not bundled'}`);
 }
 
 main().catch((e) => {

@@ -76,6 +76,23 @@ await tracker.terminate();
 
 The bundled runtime is deliberately minimal. Per [ADR 0005](../../docs/adr/0005-scorm-again-as-primary-lms-api-wrapper.md), the production choice is `scorm-again` — gated on the fixed-scope legal memo for its LGPL-3 / MIT mixed licensing ([OQ-P0-12](../../docs/plan/10-open-questions.md)). When the memo clears, the packager will swap to a vendored scorm-again bundle with the same `window.LernkitScorm12` shape; downstream code does not change.
 
+## Optional: bundle the Pyodide runtime for offline-capable delivery
+
+Set `INCLUDE_PYODIDE_RUNTIME=1` when invoking the `apps/docs` packager script (`scripts/package-scorm12.mjs`) to pull every file under `dist/pyodide/` into the zip as a shared asset. This lets `<RunnablePython>` / `<RunnableRobot>` cells work inside an LMS that has no network access to the hosted origin.
+
+- Adds ~6.3 MB (zip-compressed) regardless of course size.
+- Files land at `pyodide/` inside the zip; any bundled RF wheels at `pyodide/wheels/`.
+- Worker path resolution (`../pyodide/...`) is already correct for both hosted and LMS-mounted delivery — the same binary works in both.
+
+Convenience scripts expose both modes:
+
+```bash
+pnpm --filter=@lernkit/docs package:scorm12                          # no runtime, ~160 KB
+pnpm --filter=@lernkit/docs package:scorm12:with-runtime              # +6.3 MB
+pnpm --filter=@lernkit/docs package:scorm12:rf-training                # no runtime, ~320 KB
+pnpm --filter=@lernkit/docs package:scorm12:rf-training:with-runtime   # +6.3 MB, includes RF wheel
+```
+
 ## Optional: bundle the ADL SCORM 1.2 XSDs
 
 Strict LMSes (older SumTotal, Saba, some SAP SuccessFactors configs) expect the four ADL CAM schemas co-resident with `imsmanifest.xml`. Drop them into `src/scorm12/schemas/` and the packager ships them at the zip root automatically:

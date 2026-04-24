@@ -49,6 +49,43 @@ lernkit-sample-course-0.0.0-scorm12.zip
 └── course/<lesson-id>/index.html          ← one HTML per SCO
 ```
 
+## Offline-capable delivery — bundle the Pyodide runtime
+
+If your course contains `<RunnablePython>` or `<RunnableRobot>` cells and you want the SCORM zip to work **without internet access to the hosted origin**, the packager can bundle the Pyodide runtime (plus any Robot Framework wheels) directly into the zip.
+
+<Steps>
+
+1. **Build, then package with the runtime flag.**
+
+   ```bash
+   pnpm --filter=@lernkit/docs package:scorm12:with-runtime
+   # or, for the RF training course:
+   pnpm --filter=@lernkit/docs package:scorm12:rf-training:with-runtime
+   ```
+
+2. **Expect a bigger zip.**
+
+   | Course | Without runtime | With runtime |
+   |---|---|---|
+   | Sample | ~160 KB | ~6.5 MB |
+   | RF training | ~320 KB | ~6.6 MB |
+
+   The runtime adds ~6.3 MB (compressed) regardless of course size. Pyodide's `pyodide.asm.wasm` is the main payload (~8.6 MB uncompressed, ~4 MB after zip DEFLATE).
+
+</Steps>
+
+**When to opt in:**
+
+- You're delivering to an air-gapped LMS, or an LMS that blocks third-party origin fetches.
+- You want the `<RunnablePython>` / `<RunnableRobot>` cells to work even if your hosted origin is offline.
+
+**When to skip (the default):**
+
+- The SCORM zip is purely for completion tracking; learners do their practice on your hosted docs site.
+- You want the smallest possible zip (many LMSes have per-SCO size limits).
+
+The bundle lives at `pyodide/` inside the zip; the worker resolves `../pyodide/pyodide.mjs` relative to its own location under `_astro/`, which works both on the hosted site and inside an LMS iframe (the LMS mounts content at an arbitrary URL prefix; relative paths handle that transparently).
+
 The manifest declares `<schema>ADL SCORM</schema>` with `<schemaversion>1.2</schemaversion>` and the three required XML namespaces (`imscp_rootv1p1p2`, `adlcp_rootv1p2`, `imsmd_rootv1p2p1`). Every lesson is an `adlcp:scormtype="sco"` resource listing every file it depends on.
 
 ## LMS import
