@@ -9,6 +9,9 @@ build/
 # Self-hosted Pyodide assets (copied from node_modules by apps/docs/scripts/copy-pyodide.mjs)
 apps/docs/public/pyodide/
 
+# Self-hosted Robot Framework libdocs (downloaded by apps/docs/scripts/download-rf-libdocs.mjs)
+apps/docs/public/rf-libdocs/
+
 # Dependencies
 node_modules/
 .pnpm-store/

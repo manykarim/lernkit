@@ -13,7 +13,7 @@ import {
 } from '@codemirror/view';
 import { useEffect, useRef, type ReactElement } from 'react';
 
-import { builtinKeywordCompletions } from './builtin-keywords.js';
+import { loadLibdocCompletions } from './libdoc-loader.js';
 import { robotFrameworkLanguage } from './robot-framework-language.js';
 
 export interface RobotFrameworkEditorProps {
@@ -39,16 +39,19 @@ export interface RobotFrameworkEditorProps {
  * Ships:
  *  - syntax highlighting via the local `robotFrameworkLanguage` (StreamLanguage,
  *    see ./robot-framework-language.ts)
- *  - autocomplete from a hardcoded BuiltIn keyword list (see ./builtin-keywords.ts)
+ *  - autocomplete from the vendored libdoc JSONs (BuiltIn, Collections,
+ *    String, DateTime, OperatingSystem, Process, XML — ~298 keywords) via
+ *    `./libdoc-loader.ts`. Falls back to the hardcoded ~30-keyword list in
+ *    `./builtin-keywords.ts` when the libdocs aren't reachable.
  *  - line numbers + active-line gutter highlight
  *  - bracket matching, history (undo/redo), search-friendly defaults
  *  - Tab → 4 spaces (preserves the two-space-separator rule by NOT
  *    auto-collapsing whitespace) per `indentWithTab`
  *
  * Bundle size: ~210 KB gzipped including the legacy-modes simpleMode helper
- * and CodeMirror's basic extensions. CM6 tree-shakes well; we deliberately
- * skip search, lint, and theme overrides — Starlight's CSS gives us a clean
- * default.
+ * and CodeMirror's basic extensions. The libdocs themselves load lazily on
+ * first autocomplete trigger (~900 KB JSON across the 7 libraries; cached
+ * by the browser HTTP cache after the first request).
  */
 export function RobotFrameworkEditor({
   value,
@@ -68,14 +71,17 @@ export function RobotFrameworkEditor({
   useEffect(() => {
     if (!hostRef.current) return undefined;
 
-    const completionSource = (ctx: CompletionContext): CompletionResult | null => {
+    const completionSource = async (
+      ctx: CompletionContext,
+    ): Promise<CompletionResult | null> => {
       const word = ctx.matchBefore(/[A-Za-z][A-Za-z0-9 ]*/);
       if (!word) return null;
       // Don't auto-pop on the first character unless the user explicitly asked for completion.
       if (word.from === word.to && !ctx.explicit) return null;
+      const completions = await loadLibdocCompletions();
       return {
         from: word.from,
-        options: builtinKeywordCompletions as unknown as CompletionResult['options'],
+        options: completions as unknown as CompletionResult['options'],
         validFor: /^[A-Za-z][A-Za-z0-9 ]*$/,
       };
     };

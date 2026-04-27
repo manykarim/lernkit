@@ -125,10 +125,10 @@ async function discoverLessons() {
     ? await walkFiles(sharedAstroDir).then((xs) => xs.map((x) => `_astro/${x}`))
     : [];
 
-  // Optionally bundle the Pyodide runtime (ADR 0006) so the SCORM zip is
-  // self-contained for offline LMS delivery. Adds ~13-14 MB to the zip.
-  const sharedPyodideFiles = [];
-  let pyodideBytes = 0;
+  // Optionally bundle the Pyodide runtime (ADR 0006) and the Robot Framework
+  // libdoc JSONs (used by the editor's autocomplete) so the SCORM zip is
+  // self-contained for offline LMS delivery. Adds ~6 MB compressed.
+  const sharedRuntimeFiles = [];
   if (INCLUDE_PYODIDE_RUNTIME) {
     const pyodideDir = join(distDir, 'pyodide');
     const pyodideExists = await stat(pyodideDir).catch(() => null);
@@ -138,14 +138,20 @@ async function discoverLessons() {
           'Did you run the Astro build (which runs copy-pyodide.mjs via prebuild)?',
       );
     }
-    const files = await walkFiles(pyodideDir);
-    for (const f of files) {
-      sharedPyodideFiles.push(`pyodide/${f}`);
-      pyodideBytes += (await stat(join(pyodideDir, f))).size;
+    const pyodideFiles = await walkFiles(pyodideDir);
+    for (const f of pyodideFiles) sharedRuntimeFiles.push(`pyodide/${f}`);
+
+    // Libdocs travel with the runtime — the editor's autocomplete is useless
+    // without them when the LMS has no network access to the hosted origin.
+    const libdocsDir = join(distDir, 'rf-libdocs');
+    const libdocsExists = await stat(libdocsDir).catch(() => null);
+    if (libdocsExists?.isDirectory()) {
+      const libdocFiles = await walkFiles(libdocsDir);
+      for (const f of libdocFiles) sharedRuntimeFiles.push(`rf-libdocs/${f}`);
     }
   }
 
-  const sharedFiles = [...sharedAstroFiles, ...sharedPyodideFiles];
+  const sharedFiles = [...sharedAstroFiles, ...sharedRuntimeFiles];
 
   // Include the course root itself if it has an index.html (course overview page).
   const rootIdx = join(courseRoot, 'index.html');
