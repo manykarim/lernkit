@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactElement } from 'react';
+import { RobotFrameworkEditor } from './editor/RobotFrameworkEditor.js';
 import { useRobotRunner } from './useRobotRunner.js';
 import type { RobotRunResult } from './rf.worker.js';
 
@@ -22,8 +23,9 @@ export interface RunnableRobotProps {
  *  - a stats pill (passed / failed / skipped)
  *  - a toggle that renders `log.html` in a same-origin blob iframe
  *
- * MVP editor: styled `<textarea>` with tab-to-spaces handling. CodeMirror 6 +
- * Lezer RF grammar lands in the next slice (per ADR 0010 / ADR 0024).
+ * Editor: CodeMirror 6 with a StreamLanguage-based RF grammar
+ * (see `editor/robot-framework-language.ts`) and BuiltIn keyword
+ * autocomplete (Ctrl-Space / Cmd-Space). Per ADR 0010 + ADR 0024.
  */
 export function RunnableRobot({
   initialCode,
@@ -35,6 +37,8 @@ export function RunnableRobot({
   const [code, setCode] = useState(initialCode);
   const [result, setResult] = useState<RobotRunResult | null>(null);
   const [showLog, setShowLog] = useState(false);
+  const editorId = useId();
+  const previousBlobUrlRef = useRef<string | null>(null);
 
   const logBlobUrl = useMemo<string | null>(() => {
     if (!result?.artifacts.logHtml) return null;
@@ -42,10 +46,18 @@ export function RunnableRobot({
     return URL.createObjectURL(blob);
   }, [result]);
 
-  // Revoke old blob URLs on re-run to avoid leaking memory.
-  useMemo(() => {
+  // Revoke the previous blob URL when a new run produces a fresh one,
+  // and on unmount. Effect-based so it actually runs.
+  useEffect(() => {
+    if (previousBlobUrlRef.current && previousBlobUrlRef.current !== logBlobUrl) {
+      URL.revokeObjectURL(previousBlobUrlRef.current);
+    }
+    previousBlobUrlRef.current = logBlobUrl;
     return () => {
-      if (logBlobUrl) URL.revokeObjectURL(logBlobUrl);
+      if (previousBlobUrlRef.current) {
+        URL.revokeObjectURL(previousBlobUrlRef.current);
+        previousBlobUrlRef.current = null;
+      }
     };
   }, [logBlobUrl]);
 
@@ -62,36 +74,22 @@ export function RunnableRobot({
     setShowLog(false);
   }, [initialCode]);
 
-  const onCodeKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      const el = e.currentTarget;
-      const { selectionStart, selectionEnd, value } = el;
-      const next = `${value.slice(0, selectionStart)}    ${value.slice(selectionEnd)}`;
-      el.value = next;
-      el.selectionStart = el.selectionEnd = selectionStart + 4;
-      setCode(next);
-    }
-  }, []);
-
   const busy = status === 'loading' || status === 'running';
 
   return (
     <div className="lernkit-runnable-robot" data-status={status}>
       {caption ? <p className="lernkit-runnable-robot__caption">{caption}</p> : null}
 
-      <label className="lernkit-runnable-robot__editor-label" htmlFor="lernkit-rf-editor">
+      <label className="lernkit-runnable-robot__editor-label" htmlFor={editorId}>
         Robot Framework source ({fileName})
       </label>
-      <textarea
-        id="lernkit-rf-editor"
-        className="lernkit-runnable-robot__editor"
+      <RobotFrameworkEditor
+        id={editorId}
         value={code}
-        onChange={(e) => setCode(e.target.value)}
-        onKeyDown={onCodeKeyDown}
-        spellCheck={false}
-        rows={Math.min(20, Math.max(6, code.split('\n').length))}
-        aria-label="Robot Framework source — edit then click Run"
+        onChange={setCode}
+        readOnly={busy}
+        ariaLabel={`Robot Framework source for ${fileName} — edit then click Run`}
+        testId="runnable-robot-editor"
       />
 
       <div className="lernkit-runnable-robot__toolbar">
