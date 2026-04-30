@@ -13,7 +13,7 @@ import type { CoursePackage, PackagerOptions, PackagingResult } from '../types.j
  * - imsmanifest.xml at the zip root — enforced by the zip builder.
  * - No __MACOSX, no .DS_Store — enforced by the zip builder.
  * - imsmanifest.xml declares `schemaversion=1.2` and `schema=ADL SCORM` — enforced by the Nunjucks template.
- * - Every lesson (SCO) lists every file it depends on in its <resource> element — driven by CoursePackage.lessons[i].assets.
+ * - Every lesson (SCO) lists every file it depends on in its `<resource>` element — driven by CoursePackage.lessons[i].assets.
  *
  * The runtime JS is injected under `lernkit-runtime/scorm12.js`. Lessons opt
  * into it by including `<script src="lernkit-runtime/scorm12.js"></script>`

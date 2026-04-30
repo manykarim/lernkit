@@ -6,21 +6,35 @@ Lernkit is an **OSS single-tenant framework** (per [ADR 0022](./docs/adr/0022-os
 
 ## Status
 
-**Phase 0 complete. Phase 1 in progress — SCORM 1.2 packager landed.**
+**Phase 1 complete. SCORM 1.2 packages run in real LMSes (PeopleFluent + SCORM Cloud).**
 
-- `pnpm build:scorm12` now produces a structurally-conformant SCORM 1.2 zip from the sample course.
+- `pnpm build:scorm12` produces a SCORM 1.2 zip that imports and runs cleanly in SCORM Cloud and enterprise LMSes (PeopleFluent observed).
 - `LernkitScorm12Adapter` implements the unified Tracker interface (ADR 0004) against the bundled in-browser runtime.
-- Full Phase 1 completion (real LMS round-trips, Tier 1 widget library, xAPI stub) is ongoing — see [`docs/plan/02-phase-plan.md`](./docs/plan/02-phase-plan.md).
+- See the [framework documentation](https://manykarim.github.io/lernkit/) for the full reference manual.
+
+## Documentation
+
+📖 **[manykarim.github.io/lernkit](https://manykarim.github.io/lernkit/)** — Quickstart, packaging guide, tracking interface, RunnableRobot, all ADRs, full API reference.
+
+The docs site is built from `apps/website/` with Docusaurus 3 and deployed to GitHub Pages on every push to `main`. To run it locally:
+
+```bash
+pnpm install
+pnpm --filter=@lernkit/website dev   # → http://localhost:3000/lernkit/
+```
 
 ## Repository layout
 
 ```
 apps/
-  docs/        Astro 5 + Starlight site + sample course (MDX)
+  docs/        Astro 5 + Starlight site + sample course (MDX) — also packaged as SCORM
+  website/     Docusaurus 3 framework reference docs — deployed to GitHub Pages
   api/         FastAPI backend — code-execution control plane skeleton
 packages/
-  tracker/     Unified Tracker interface (ADR 0004) + NoopAdapter + LernkitScorm12Adapter
+  tracker/     Unified Tracker interface (ADR 0004) + NoopAdapter + LernkitScorm12Adapter + XapiStubAdapter
   packagers/   SCORM 1.2 packager (Phase 1); cmi5 / 2004 / xAPI follow (ADR 0015)
+  components/  Quiz primitives (MCQ, TrueFalse, Quiz)
+  runtime/     Shared browser-side runtime helpers
   config/      Shared tsconfig and lint presets
 infra/
   docker/      Dockerfiles for the app + api

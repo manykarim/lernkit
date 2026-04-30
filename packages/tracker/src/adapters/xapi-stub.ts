@@ -12,7 +12,7 @@ import type { CompletionStatus, Interaction, Score, SuccessStatus, Tracker, Trac
  *   `/xapi` proxy (per ADR 0013).
  *
  * Statement shape follows xAPI 2.0 / IEEE 9274.1.1:
- *   { id, actor, verb, object, result?, context?, timestamp, stored?, authority? }
+ *   `{ id, actor, verb, object, result?, context?, timestamp, stored?, authority? }`
  *
  * The stub sets `id` to a v4-like UUID, `actor` to an anonymous account, and
  * `timestamp` to the ISO-8601 wall-clock moment of emission. Override via

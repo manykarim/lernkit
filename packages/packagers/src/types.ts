@@ -34,7 +34,7 @@ export interface CourseMetadata {
   readonly estimatedMinutes?: number;
   /**
    * When true, only the entry lesson is declared as a SCO; all other lesson
-   * HTMLs become <file> entries of that single SCO. Pairs with SPA-style
+   * HTMLs become `<file>` entries of that single SCO. Pairs with SPA-style
    * internal navigation (e.g., Astro View Transitions) so the whole course
    * runs in one SCORM session — `LMSInitialize` and `LMSFinish` each fire
    * exactly once.
@@ -60,7 +60,7 @@ export interface Lesson {
   readonly href: string;
   /** All asset files this lesson depends on, relative to the built Astro dist root. */
   readonly assets: readonly string[];
-  /** Per-lesson mastery threshold in [0, 1]. When set, emits <adlcp:masteryscore> on this item. Course-level masteryScore is no longer auto-applied per item; this is opt-in. */
+  /** Per-lesson mastery threshold in [0, 1]. When set, emits `<adlcp:masteryscore>` on this item. Course-level masteryScore is no longer auto-applied per item; this is opt-in. */
   readonly masteryScore?: number;
 }
 
