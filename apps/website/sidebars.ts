@@ -6,11 +6,7 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: '📖 Introduction',
       collapsed: false,
-      items: [
-        'introduction/what-is-lernkit',
-        'introduction/quickstart',
-        'introduction/concepts',
-      ],
+      items: ['introduction/what-is-lernkit', 'introduction/quickstart', 'introduction/concepts'],
     },
     {
       type: 'category',
@@ -32,22 +28,13 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: '📦 Packaging',
       collapsed: false,
-      items: [
-        'packaging/index',
-        'packaging/scorm12',
-        'packaging/topology',
-        'packaging/lms-portability',
-      ],
+      items: ['packaging/index', 'packaging/scorm12', 'packaging/topology', 'packaging/lms-portability'],
     },
     {
       type: 'category',
       label: '📊 Tracking',
       collapsed: false,
-      items: [
-        'tracking/interface',
-        'tracking/adapters',
-        'tracking/pick-tracker',
-      ],
+      items: ['tracking/interface', 'tracking/adapters', 'tracking/pick-tracker'],
     },
     {
       type: 'category',

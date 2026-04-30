@@ -13,7 +13,7 @@
  * touching real code samples.
  */
 
-import { readdir, readFile, mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 

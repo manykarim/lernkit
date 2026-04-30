@@ -140,9 +140,7 @@ function buildTemplateData(ctx: ManifestContext): TemplateData {
     const sharedAssets = Array.from(allAssets).sort();
 
     const entryMasteryScorePercent =
-      pkg.metadata.masteryScore === undefined
-        ? null
-        : Math.round(clamp01(pkg.metadata.masteryScore) * 100);
+      pkg.metadata.masteryScore === undefined ? null : Math.round(clamp01(pkg.metadata.masteryScore) * 100);
 
     return {
       manifestIdentifier: `manifest-${slug(courseId)}`,
@@ -172,8 +170,7 @@ function buildTemplateData(ctx: ManifestContext): TemplateData {
       href: lesson.href,
       title: lesson.title,
       files: dedupe([lesson.href, ...uniqueAssets]),
-      masteryScorePercent:
-        lesson.masteryScore === undefined ? null : Math.round(clamp01(lesson.masteryScore) * 100),
+      masteryScorePercent: lesson.masteryScore === undefined ? null : Math.round(clamp01(lesson.masteryScore) * 100),
     };
   });
 

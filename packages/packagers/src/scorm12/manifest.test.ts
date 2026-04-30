@@ -216,8 +216,11 @@ describe('single-SCO mode', () => {
   it('falls back to the first lesson when entryLessonId is not provided', async () => {
     const pkg = { ...singleScoFixture(), metadata: { ...singleScoFixture().metadata, entryLessonId: undefined } };
     const xml = await renderScorm12Manifest({ pkg });
-    const firstHref = pkg.lessons[0]!.href;
-    expect(xml).toMatch(new RegExp(`<resource [^>]*identifier="res-entry"[^>]*href="${firstHref.replace(/\//g, '\\/')}"`));
+    const firstLesson = pkg.lessons[0];
+    if (!firstLesson) throw new Error('test fixture must have at least one lesson');
+    expect(xml).toMatch(
+      new RegExp(`<resource [^>]*identifier="res-entry"[^>]*href="${firstLesson.href.replace(/\//g, '\\/')}"`),
+    );
   });
 
   it('emits course-level masteryscore on the single item when configured', async () => {

@@ -368,12 +368,7 @@ describe('rewriteAbsolutePaths', () => {
     ]);
 
     it('appends index.html to a sibling directory link (../1-2-virtual-environments/)', () => {
-      const out = rewriteAbsolutePaths(
-        '<a href="../1-2-virtual-environments/">next</a>',
-        3,
-        pkgWithSiblings,
-        docDir,
-      );
+      const out = rewriteAbsolutePaths('<a href="../1-2-virtual-environments/">next</a>', 3, pkgWithSiblings, docDir);
       expect(out).toBe('<a href="../1-2-virtual-environments/index.html">next</a>');
     });
 
@@ -388,12 +383,7 @@ describe('rewriteAbsolutePaths', () => {
     });
 
     it('leaves a directory link alone when no index.html exists for it (defensive)', () => {
-      const out = rewriteAbsolutePaths(
-        '<a href="../no-such-page/">nope</a>',
-        3,
-        pkgWithSiblings,
-        docDir,
-      );
+      const out = rewriteAbsolutePaths('<a href="../no-such-page/">nope</a>', 3, pkgWithSiblings, docDir);
       expect(out).toBe('<a href="../no-such-page/">nope</a>');
     });
 
@@ -403,12 +393,7 @@ describe('rewriteAbsolutePaths', () => {
     });
 
     it('is idempotent across the relative-suffix pass', () => {
-      const once = rewriteAbsolutePaths(
-        '<a href="../1-2-virtual-environments/">x</a>',
-        3,
-        pkgWithSiblings,
-        docDir,
-      );
+      const once = rewriteAbsolutePaths('<a href="../1-2-virtual-environments/">x</a>', 3, pkgWithSiblings, docDir);
       const twice = rewriteAbsolutePaths(once, 3, pkgWithSiblings, docDir);
       expect(twice).toBe(once);
     });
@@ -550,8 +535,7 @@ describe('addAstroTransitionPersist', () => {
   });
 
   it('does not double-add when the attribute is already present', () => {
-    const html =
-      '<link rel="stylesheet" href="x.css" data-astro-transition-persist="stylesheet:x.css">';
+    const html = '<link rel="stylesheet" href="x.css" data-astro-transition-persist="stylesheet:x.css">';
     expect(addAstroTransitionPersist(html)).toBe(html);
   });
 
@@ -631,7 +615,8 @@ describe('harmoniseStylesheets', () => {
 
 describe('inlineStylesheets', () => {
   it('replaces a matching <link> with a <style> carrying the CSS contents', () => {
-    const html = '<link rel="stylesheet" href="../_astro/ec.j8ofn.css" data-astro-transition-persist="stylesheet:ec.j8ofn.css">';
+    const html =
+      '<link rel="stylesheet" href="../_astro/ec.j8ofn.css" data-astro-transition-persist="stylesheet:ec.j8ofn.css">';
     const inlined = new Map([['ec.j8ofn.css', '.code{color:red}']]);
     const out = inlineStylesheets(html, inlined);
     expect(out).toContain('<style data-astro-transition-persist="style:ec.j8ofn.css">.code{color:red}</style>');
@@ -668,8 +653,7 @@ describe('inlineStylesheets', () => {
 
   it('preserves non-link surrounding markup', () => {
     const inlined = new Map([['ec.X.css', '.x{}']]);
-    const html =
-      '<head><title>X</title><link rel="stylesheet" href="../_astro/ec.X.css"></head>';
+    const html = '<head><title>X</title><link rel="stylesheet" href="../_astro/ec.X.css"></head>';
     const out = inlineStylesheets(html, inlined);
     expect(out).toContain('<title>X</title>');
     expect(out).toContain('<style');

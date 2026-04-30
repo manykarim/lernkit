@@ -2,8 +2,8 @@ import { readFile } from 'node:fs/promises';
 import { join, posix, relative, sep } from 'node:path';
 import JSZip from 'jszip';
 
-import { runtimeScriptTag } from './runtime.js';
 import type { CoursePackage, PackagerOptions } from '../types.js';
+import { runtimeScriptTag } from './runtime.js';
 
 /**
  * Zip layout rules for SCORM 1.2 (research §3.2):
@@ -197,7 +197,7 @@ export function injectRuntimeScript(html: string, depth: number): string {
   const inject = tag + bootstrap;
 
   if (/<\/head\s*>/i.test(html)) {
-    return html.replace(/<\/head\s*>/i, inject + '</head>');
+    return html.replace(/<\/head\s*>/i, `${inject}</head>`);
   }
   if (/<head[^>]*>/i.test(html)) {
     return html.replace(/<head[^>]*>/i, (m) => m + inject);
@@ -278,10 +278,10 @@ export function rewriteAbsolutePaths(
       let target: string | undefined;
       if (packagePaths.has(path)) {
         target = path;
-      } else if (path.endsWith('/') && packagePaths.has(path + 'index.html')) {
-        target = path + 'index.html';
-      } else if (packagePaths.has(path + '/index.html')) {
-        target = path + '/index.html';
+      } else if (path.endsWith('/') && packagePaths.has(`${path}index.html`)) {
+        target = `${path}index.html`;
+      } else if (packagePaths.has(`${path}/index.html`)) {
+        target = `${path}/index.html`;
       }
       if (target === undefined) return '';
       return `${ws}${attr}="${prefix}${target}"`;
@@ -291,7 +291,7 @@ export function rewriteAbsolutePaths(
   if (docDir !== undefined) {
     out = out.replace(/(\s)(href|src)="(\.{1,2}\/[^"]*\/)"/g, (match, ws: string, attr: string, value: string) => {
       const resolved = resolveRelative(docDir, value);
-      const candidate = resolved + 'index.html';
+      const candidate = `${resolved}index.html`;
       if (!packagePaths.has(candidate)) return match;
       return `${ws}${attr}="${value}index.html"`;
     });
@@ -322,9 +322,7 @@ function resolveRelative(baseDir: string, value: string): string {
  * subdirectory regardless of where the LMS serves it.
  */
 export function rewriteAstroJsPaths(jsSource: string): string {
-  return jsSource
-    .replace(/"\/_astro\/([^"]*)"/g, '"./$1"')
-    .replace(/'\/_astro\/([^']*)'/g, "'./$1'");
+  return jsSource.replace(/"\/_astro\/([^"]*)"/g, '"./$1"').replace(/'\/_astro\/([^']*)'/g, "'./$1'");
 }
 
 /**
@@ -336,11 +334,7 @@ export function rewriteAstroJsPaths(jsSource: string): string {
  * Missing stylesheets are appended just before `</head>` with `data-astro-transition-persist`
  * already set, so the persist pass is a no-op for them.
  */
-export function harmoniseStylesheets(
-  html: string,
-  depth: number,
-  allStylesheets: ReadonlySet<string>,
-): string {
+export function harmoniseStylesheets(html: string, depth: number, allStylesheets: ReadonlySet<string>): string {
   if (allStylesheets.size === 0) return html;
   const prefix = depth <= 0 ? '' : '../'.repeat(depth);
 
@@ -360,7 +354,7 @@ export function harmoniseStylesheets(
   }
 
   if (!inject) return html;
-  if (/<\/head\s*>/i.test(html)) return html.replace(/<\/head\s*>/i, inject + '</head>');
+  if (/<\/head\s*>/i.test(html)) return html.replace(/<\/head\s*>/i, `${inject}</head>`);
   if (/<head[^>]*>/i.test(html)) return html.replace(/<head[^>]*>/i, (m) => m + inject);
   return inject + html;
 }
