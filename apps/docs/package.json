@@ -9,6 +9,7 @@
     "start": "astro dev --host",
     "prebuild": "node scripts/copy-pyodide.mjs && node scripts/download-rf-wheels.mjs && node scripts/download-rf-libdocs.mjs",
     "build": "astro check && astro build",
+    "build:gh-pages": "LERNKIT_BASE=/lernkit/training/ astro check && LERNKIT_BASE=/lernkit/training/ astro build",
     "preview": "astro preview",
     "typecheck": "astro check",
     "clean": "rm -rf dist .astro dist-packages public/pyodide public/rf-libdocs",

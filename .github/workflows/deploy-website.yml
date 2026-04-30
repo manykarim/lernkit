@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'apps/website/**'
+      - 'apps/docs/**'
       - 'packages/**'
       - 'docs/adr/**'
       - '.github/workflows/deploy-website.yml'
@@ -36,6 +37,14 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build training course (GH Pages variant)
+        run: pnpm --filter=@lernkit/docs build:gh-pages
+
+      - name: Copy training course into website's static dir
+        run: |
+          mkdir -p apps/website/static/training
+          cp -r apps/docs/dist/. apps/website/static/training/
 
       - name: Build website
         run: pnpm --filter=@lernkit/website build

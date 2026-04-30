@@ -3,9 +3,17 @@ import react from '@astrojs/react';
 import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
 
+// `LERNKIT_BASE` flips the build between two outputs:
+// - unset (default): root-relative URLs, suitable for the SCORM packager which
+//   rewrites paths at zip-assembly time and for plain `pnpm dev` previews;
+// - set to e.g. `/lernkit/training/`: depth-prefixed URLs, suitable for hosting
+//   the static course alongside the Docusaurus reference docs at GitHub Pages.
+const LERNKIT_BASE = process.env.LERNKIT_BASE;
+
 // https://astro.build/config
 export default defineConfig({
   site: process.env.SITE_URL ?? 'http://localhost:4321',
+  ...(LERNKIT_BASE ? { base: LERNKIT_BASE } : {}),
   integrations: [
     react(),
     starlight({
