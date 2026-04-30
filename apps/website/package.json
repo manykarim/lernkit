@@ -5,6 +5,9 @@
   "description": "Lernkit framework reference documentation (Docusaurus). Separate from the Astro/Starlight course site under apps/docs.",
   "license": "MIT",
   "scripts": {
+    "predev": "node scripts/sync-adrs.mjs",
+    "prestart": "node scripts/sync-adrs.mjs",
+    "prebuild": "node scripts/sync-adrs.mjs",
     "dev": "docusaurus start",
     "start": "docusaurus start",
     "build": "docusaurus build",

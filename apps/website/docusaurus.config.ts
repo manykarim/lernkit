@@ -44,13 +44,12 @@ const config: Config = {
   ],
 
   plugins: [
-    [
-      './plugins/adr-loader/index.ts',
-      {
-        adrSourceDir: '../../docs/adr',
-        outputRoute: '/architecture/adrs',
-      },
-    ],
+    // ADRs are mirrored from docs/adr/ by scripts/sync-adrs.mjs as a pre-build
+    // step (see package.json predev/prestart/prebuild). It runs before
+    // Docusaurus's docs plugin scans the docs/ tree, so the ADR pages exist
+    // when the route map is built. A Docusaurus plugin's loadContent runs in
+    // parallel with the docs plugin's scan, which races and loses on a fresh
+    // checkout.
     [
       'docusaurus-plugin-typedoc',
       {
