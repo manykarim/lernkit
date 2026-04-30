@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lom xmlns="http://www.imsglobal.org/xsd/imsmd_rootv1p2p1"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd">
+  <general>
+    <title><langstring xml:lang="{{ language }}">{{ courseTitle }}</langstring></title>
+    {% if courseDescription %}
+    <description><langstring xml:lang="{{ language }}">{{ courseDescription }}</langstring></description>
+    {% endif %}
+    <language>{{ language }}</language>
+  </general>
+</lom>

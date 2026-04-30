@@ -56,7 +56,12 @@ interface LibdocManifest {
   readonly libraries: readonly LibdocManifestLibrary[];
 }
 
-const LIBDOCS_BASE = '/rf-libdocs';
+// Resolved at module-evaluation time so the libdocs are reachable from any
+// host path. The bundled module lives under `_astro/`, so `../rf-libdocs/`
+// from `import.meta.url` lands on the package's vendored libdoc directory.
+// A root-absolute path (`/rf-libdocs`) would resolve to the host root and
+// 404 inside an LMS sub-path mount (SCORM Cloud, PeopleFluent, etc.).
+const LIBDOCS_BASE = new URL('../rf-libdocs/', import.meta.url).href;
 
 let cache: Promise<readonly Completion[]> | null = null;
 
@@ -64,7 +69,9 @@ export function loadLibdocCompletions(): Promise<readonly Completion[]> {
   if (cache) return cache;
   cache = (async () => {
     try {
-      const manifestRes = await fetch(`${LIBDOCS_BASE}/manifest.json`, { credentials: 'omit' });
+      // Use the fetch default (`credentials: 'same-origin'`) so LMSes that gate
+      // package files behind a session cookie still authorise the request.
+      const manifestRes = await fetch(new URL('manifest.json', LIBDOCS_BASE).href);
       if (!manifestRes.ok) throw new Error(`manifest fetch failed: ${manifestRes.status}`);
       const manifest = (await manifestRes.json()) as LibdocManifest;
 
@@ -73,7 +80,7 @@ export function loadLibdocCompletions(): Promise<readonly Completion[]> {
 
       for (const entry of manifest.libraries) {
         try {
-          const libRes = await fetch(`${LIBDOCS_BASE}/${entry.file}`, { credentials: 'omit' });
+          const libRes = await fetch(new URL(entry.file, LIBDOCS_BASE).href);
           if (!libRes.ok) continue;
           const libdoc = (await libRes.json()) as LibdocFile;
           for (const kw of libdoc.keywords ?? []) {

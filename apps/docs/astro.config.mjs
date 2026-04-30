@@ -71,6 +71,9 @@ export default defineConfig({
         },
       ],
       customCss: ['./src/styles/lernkit.css'],
+      components: {
+        Head: './src/components/CustomHead.astro',
+      },
     }),
   ],
 });

@@ -1,15 +1,20 @@
 import { MCQ, Quiz, TrueFalse } from '@lernkit/components';
-import { XapiStubAdapter } from '@lernkit/tracker';
 import { useMemo, useRef, useState, type ReactElement } from 'react';
+import { pickTracker } from '../../lib/pick-tracker';
 
 export default function Section2ReviewQuiz(): ReactElement {
-  const tracker = useMemo(() => new XapiStubAdapter('rf-training/section-2/review'), []);
+  const picked = useMemo(() => pickTracker('rf-training/section-2/review'), []);
+  const tracker = picked.tracker;
   const initOnce = useRef(false);
-  const [statements, setStatements] = useState(() => tracker.statements);
+  const [statements, setStatements] = useState(() =>
+    picked.kind === 'xapi-stub' ? picked.tracker.statements : [],
+  );
 
   if (!initOnce.current) {
     initOnce.current = true;
-    void tracker.init().then(() => setStatements(tracker.statements));
+    void tracker.init().then(() => {
+      if (picked.kind === 'xapi-stub') setStatements(picked.tracker.statements);
+    });
   }
 
   return (
@@ -19,7 +24,9 @@ export default function Section2ReviewQuiz(): ReactElement {
         title="Section 2 review"
         passingScore={0.7}
         tracker={tracker}
-        onGraded={() => setStatements(tracker.statements)}
+        onGraded={() => {
+          if (picked.kind === 'xapi-stub') setStatements(picked.tracker.statements);
+        }}
       >
         <MCQ
           id="sections"
@@ -101,12 +108,14 @@ export default function Section2ReviewQuiz(): ReactElement {
         />
       </Quiz>
 
-      <details className="lernkit-demo__xapi">
-        <summary>xAPI statements emitted ({statements.length})</summary>
-        <pre aria-label="xAPI statement queue">
-          <code>{JSON.stringify(statements, null, 2)}</code>
-        </pre>
-      </details>
+      {picked.kind === 'xapi-stub' ? (
+        <details className="lernkit-demo__xapi">
+          <summary>xAPI statements emitted ({statements.length})</summary>
+          <pre aria-label="xAPI statement queue">
+            <code>{JSON.stringify(statements, null, 2)}</code>
+          </pre>
+        </details>
+      ) : null}
     </div>
   );
 }

@@ -3,11 +3,12 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
 
-import type { CoursePackage } from '../types.js';
+import type { CoursePackage, Lesson } from '../types.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = join(here, 'templates');
 const MANIFEST_TEMPLATE = 'imsmanifest.xml.njk';
+const METADATA_TEMPLATE = 'metadata.xml.njk';
 
 const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(TEMPLATES_DIR, { noCache: false }), {
   autoescape: true,
@@ -26,20 +27,38 @@ export interface ManifestContext {
  *
  * SCORM 1.2 manifest shape (per ADL SCORM 1.2 conformance guide):
  * - root `<manifest>` with `identifier`, `version`, and the IMS CP + ADLCP namespaces
- * - `<metadata>` declaring `schema=ADL SCORM` and `schemaversion=1.2`
+ * - `<metadata>` declaring `schema=ADL SCORM` and `schemaversion=1.2`, with the LOM
+ *   externalised via `<adlcp:location>metadata.xml</adlcp:location>`
  * - one `<organizations default="...">` with at least one `<organization>`
- * - `<resources>` with one `<resource adlcp:scormtype="sco">` per lesson
+ * - `<resources>` with one `<resource adlcp:scormtype="sco">` per lesson plus a
+ *   single shared `<resource adlcp:scormtype="asset">` referenced via `<dependency>`
  */
 export async function renderScorm12Manifest(ctx: ManifestContext): Promise<string> {
-  // Nunjucks' async render is more ergonomic than callbacks for our case.
+  return renderTemplate(MANIFEST_TEMPLATE, buildTemplateData(ctx));
+}
+
+/**
+ * Render the external LOM metadata.xml that the manifest's
+ * `<adlcp:location>metadata.xml</adlcp:location>` points at.
+ */
+export async function renderScorm12Metadata(ctx: ManifestContext): Promise<string> {
+  const { pkg } = ctx;
+  return renderTemplate(METADATA_TEMPLATE, {
+    language: pkg.metadata.language,
+    courseTitle: pkg.metadata.title,
+    courseDescription: pkg.metadata.description ?? '',
+  });
+}
+
+function renderTemplate(template: string, data: Record<string, unknown>): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    env.render(MANIFEST_TEMPLATE, buildTemplateData(ctx), (err, result) => {
+    env.render(template, data, (err, result) => {
       if (err) {
         reject(err);
         return;
       }
       if (result === null) {
-        reject(new Error('Nunjucks rendered null for the SCORM 1.2 manifest'));
+        reject(new Error(`Nunjucks rendered null for template ${template}`));
         return;
       }
       resolve(result);
@@ -52,6 +71,7 @@ interface TemplateLesson {
   readonly href: string;
   readonly title: string;
   readonly files: readonly string[];
+  readonly masteryScorePercent: number | null;
 }
 
 interface TemplateData {
@@ -64,23 +84,98 @@ interface TemplateData {
   readonly organizationTitle: string;
   readonly defaultOrganizationIdentifier: string;
   readonly lessons: readonly TemplateLesson[];
-  readonly masteryScorePercent: number | null;
+  readonly sharedAssets: readonly string[];
+  readonly singleSco: boolean;
+  readonly entryHref: string | null;
+  readonly allLessonHrefs: readonly string[];
+  readonly entryMasteryScorePercent: number | null;
+  readonly [key: string]: unknown;
+}
+
+/**
+ * Files referenced by two or more lessons land in a single shared `<resource>`
+ * so strict LMS importers don't synthesise duplicate symbols when the same path
+ * appears under multiple SCOs.
+ */
+export function computeSharedAssets(lessons: readonly Lesson[]): string[] {
+  const counts = new Map<string, number>();
+  for (const lesson of lessons) {
+    const unique = new Set<string>(lesson.assets);
+    for (const path of unique) {
+      counts.set(path, (counts.get(path) ?? 0) + 1);
+    }
+  }
+  const shared: string[] = [];
+  for (const [path, count] of counts) {
+    if (count >= 2) shared.push(path);
+  }
+  return shared.sort();
 }
 
 function buildTemplateData(ctx: ManifestContext): TemplateData {
   const { pkg } = ctx;
   const courseId = pkg.metadata.courseId;
-
-  const lessons: TemplateLesson[] = pkg.lessons.map((lesson, index) => ({
-    identifier: `res-${slug(lesson.id)}-${index + 1}`,
-    href: lesson.href,
-    title: lesson.title,
-    // The `<resource>` element lists every file the SCO depends on.
-    // The entry file (href) must be first in the list per some LMS quirks.
-    files: dedupe([lesson.href, ...lesson.assets]),
-  }));
+  const singleSco = pkg.metadata.singleSco === true;
 
   const orgId = `org-${slug(pkg.metadata.organization?.identifier ?? 'lernkit')}`;
+
+  if (singleSco) {
+    const entryLesson =
+      (pkg.metadata.entryLessonId !== undefined
+        ? pkg.lessons.find((l) => l.id === pkg.metadata.entryLessonId)
+        : undefined) ?? pkg.lessons[0];
+
+    if (!entryLesson) {
+      throw new Error('CoursePackage.lessons must contain at least one lesson for single-SCO mode');
+    }
+
+    const allLessonHrefs = pkg.lessons.map((l) => l.href);
+    const lessonHrefSet = new Set(allLessonHrefs);
+    const allAssets = new Set<string>();
+    for (const lesson of pkg.lessons) {
+      for (const asset of lesson.assets) {
+        if (!lessonHrefSet.has(asset)) allAssets.add(asset);
+      }
+    }
+    const sharedAssets = Array.from(allAssets).sort();
+
+    const entryMasteryScorePercent =
+      pkg.metadata.masteryScore === undefined
+        ? null
+        : Math.round(clamp01(pkg.metadata.masteryScore) * 100);
+
+    return {
+      manifestIdentifier: `manifest-${slug(courseId)}`,
+      courseVersion: pkg.metadata.version,
+      language: pkg.metadata.language,
+      courseTitle: pkg.metadata.title,
+      courseDescription: pkg.metadata.description ?? '',
+      organizationIdentifier: orgId,
+      organizationTitle: pkg.metadata.organization?.name ?? 'Lernkit',
+      defaultOrganizationIdentifier: orgId,
+      lessons: [],
+      sharedAssets,
+      singleSco: true,
+      entryHref: entryLesson.href,
+      allLessonHrefs,
+      entryMasteryScorePercent,
+    };
+  }
+
+  const sharedAssets = computeSharedAssets(pkg.lessons);
+  const sharedSet = new Set(sharedAssets);
+
+  const lessons: TemplateLesson[] = pkg.lessons.map((lesson, index) => {
+    const uniqueAssets = lesson.assets.filter((a) => !sharedSet.has(a));
+    return {
+      identifier: `res-${slug(lesson.id)}-${index + 1}`,
+      href: lesson.href,
+      title: lesson.title,
+      files: dedupe([lesson.href, ...uniqueAssets]),
+      masteryScorePercent:
+        lesson.masteryScore === undefined ? null : Math.round(clamp01(lesson.masteryScore) * 100),
+    };
+  });
 
   return {
     manifestIdentifier: `manifest-${slug(courseId)}`,
@@ -92,8 +187,11 @@ function buildTemplateData(ctx: ManifestContext): TemplateData {
     organizationTitle: pkg.metadata.organization?.name ?? 'Lernkit',
     defaultOrganizationIdentifier: orgId,
     lessons,
-    masteryScorePercent:
-      pkg.metadata.masteryScore === undefined ? null : Math.round(clamp01(pkg.metadata.masteryScore) * 100),
+    sharedAssets,
+    singleSco: false,
+    entryHref: null,
+    allLessonHrefs: [],
+    entryMasteryScorePercent: null,
   };
 }
 

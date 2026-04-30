@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { renderScorm12Manifest } from './manifest.js';
+import { renderScorm12Manifest, renderScorm12Metadata } from './manifest.js';
 import { RUNTIME_ZIP_PATH, loadScorm12Runtime, loadScorm12Schemas } from './runtime.js';
 import { buildScorm12Zip } from './zip.js';
 
@@ -23,6 +23,7 @@ export async function packageScorm12(pkg: CoursePackage, options?: PackagerOptio
   validate(pkg);
 
   const manifestXml = await renderScorm12Manifest({ pkg });
+  const metadataXml = await renderScorm12Metadata({ pkg });
 
   const runtimeBody = await loadScorm12Runtime();
   const bundledSchemas = await loadScorm12Schemas();
@@ -32,6 +33,7 @@ export async function packageScorm12(pkg: CoursePackage, options?: PackagerOptio
     pkg,
     manifestXml,
     runtimeFiles,
+    extraRootFiles: [{ path: 'metadata.xml', body: metadataXml }],
     options,
   });
 
@@ -69,6 +71,13 @@ function validate(pkg: CoursePackage): void {
   }
   if (pkg.metadata.masteryScore !== undefined && (pkg.metadata.masteryScore < 0 || pkg.metadata.masteryScore > 1)) {
     throw new Error('CoursePackage.metadata.masteryScore must be in [0, 1]');
+  }
+  if (pkg.metadata.singleSco === true && pkg.metadata.entryLessonId !== undefined) {
+    const id = pkg.metadata.entryLessonId;
+    const exists = pkg.lessons.some((l) => l.id === id);
+    if (!exists) {
+      throw new Error(`Lesson with id "${id}" not found; required by metadata.entryLessonId`);
+    }
   }
 }
 

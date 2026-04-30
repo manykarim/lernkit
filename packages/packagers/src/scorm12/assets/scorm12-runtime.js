@@ -13,20 +13,48 @@
 (function () {
   'use strict';
 
-  var MAX_API_FIND_DEPTH = 10;
+  // SCORM 1.2 spec recommends 7 levels for the parent walk.
+  var MAX_API_FIND_DEPTH = 7;
+  var TERMINAL_STATUSES = ['completed', 'passed', 'failed'];
 
-  function findApi(win) {
+  function findAPI(win) {
+    if (!win) return null;
     var depth = 0;
     var cur = win;
-    while (cur && depth < MAX_API_FIND_DEPTH) {
-      if (cur.API) return cur.API;
-      if (cur === cur.parent) break;
-      cur = cur.parent;
-      depth += 1;
+    try {
+      // Walk parents. Cross-origin parent access throws SecurityError on
+      // Chromium; we guard each property read with try/catch so the search
+      // continues silently rather than aborting.
+      while (cur && depth < MAX_API_FIND_DEPTH) {
+        var apiHere = null;
+        try {
+          apiHere = cur.API;
+        } catch (e) {
+          apiHere = null;
+        }
+        if (apiHere) return apiHere;
+        var parent = null;
+        try {
+          parent = cur.parent;
+        } catch (e) {
+          parent = null;
+        }
+        if (!parent || parent === cur) break;
+        cur = parent;
+        depth += 1;
+      }
+    } catch (e) {
+      /* fall through */
     }
-    if (win.opener) {
+    var opener = null;
+    try {
+      opener = win.opener;
+    } catch (e) {
+      opener = null;
+    }
+    if (opener) {
       try {
-        return findApi(win.opener) || null;
+        return findAPI(opener) || null;
       } catch (e) {
         return null;
       }
@@ -34,53 +62,152 @@
     return null;
   }
 
-  var api = null;
-  try {
-    api = findApi(window);
-  } catch (e) {
-    api = null;
+  function getAPI() {
+    var theAPI = null;
+    try {
+      theAPI = findAPI(window);
+    } catch (e) {
+      theAPI = null;
+    }
+    if (!theAPI) {
+      var opener = null;
+      try {
+        opener = window.opener;
+      } catch (e) {
+        opener = null;
+      }
+      if (opener) {
+        try {
+          theAPI = findAPI(opener);
+        } catch (e) {
+          theAPI = null;
+        }
+      }
+    }
+    return theAPI || null;
+  }
+
+  var api = getAPI();
+
+  var debugEnabled = true;
+  var lastErrorRecord = null;
+
+  function safeWarn(line) {
+    if (!debugEnabled) return;
+    if (typeof console !== 'undefined' && console && typeof console.warn === 'function') {
+      try {
+        console.warn(line);
+      } catch (e) {
+        /* no-op */
+      }
+    }
+  }
+
+  function lastError(op) {
+    if (!api) {
+      lastErrorRecord = { code: -1, message: 'API adapter not found', diagnostic: '' };
+      return lastErrorRecord;
+    }
+    var codeStr = '0';
+    try {
+      codeStr = String(api.LMSGetLastError());
+    } catch (e) {
+      codeStr = '0';
+    }
+    var code = parseInt(codeStr, 10);
+    if (isNaN(code)) code = 0;
+    var msg = '';
+    var diag = '';
+    try {
+      msg = String(api.LMSGetErrorString(codeStr));
+    } catch (e) {
+      msg = '';
+    }
+    try {
+      diag = String(api.LMSGetDiagnostic(codeStr));
+    } catch (e) {
+      diag = '';
+    }
+    lastErrorRecord = { code: code, message: msg, diagnostic: diag };
+    if (code !== 0 && op) {
+      safeWarn('[lernkit-scorm12] LMS' + op + ': code=' + code + ' msg="' + msg + '"');
+    }
+    return lastErrorRecord;
   }
 
   // SCORM 1.2 API helpers. All LMS*() calls return strings; we normalise "true"/"false".
   function lmsInit() {
     if (!api) return false;
+    var result = 'false';
     try {
-      return api.LMSInitialize('') === 'true';
+      result = api.LMSInitialize('');
     } catch (e) {
+      result = 'false';
+    }
+    if (result !== 'true') {
+      lastError('Initialize');
       return false;
     }
+    return true;
   }
   function lmsSet(key, value) {
     if (!api) return false;
+    var result = 'false';
     try {
-      return api.LMSSetValue(key, String(value)) === 'true';
+      result = api.LMSSetValue(key, String(value));
     } catch (e) {
+      result = 'false';
+    }
+    if (result !== 'true') {
+      lastError('SetValue(' + key + ')');
       return false;
     }
+    return true;
   }
   function lmsGet(key) {
     if (!api) return '';
+    var result = '';
+    var threw = false;
     try {
-      return api.LMSGetValue(key);
+      result = api.LMSGetValue(key);
     } catch (e) {
-      return '';
+      threw = true;
+      result = '';
     }
+    // LMSGetValue returns '' on error, but the spec wants us to drain
+    // LMSGetLastError so subsequent calls see a clean slate.
+    if (threw || result === '' || result === undefined || result === null) {
+      lastError('GetValue(' + key + ')');
+    }
+    return result == null ? '' : String(result);
   }
   function lmsCommit() {
     if (!api) return false;
+    var result = 'false';
     try {
-      return api.LMSCommit('') === 'true';
+      result = api.LMSCommit('');
     } catch (e) {
+      result = 'false';
+    }
+    if (result !== 'true') {
+      lastError('Commit');
       return false;
     }
+    return true;
   }
   function lmsFinish() {
     if (!api) return false;
+    var result = 'false';
     try {
-      return api.LMSFinish('') === 'true';
+      result = api.LMSFinish('');
     } catch (e) {
+      result = 'false';
+    }
+    if (result !== 'true') {
+      lastError('Finish');
       return false;
     }
+    return true;
   }
 
   var initialized = false;
@@ -107,6 +234,13 @@
 
   var VALID_STATUSES = ['passed', 'completed', 'failed', 'incomplete', 'browsed', 'not attempted'];
 
+  function isTerminal(status) {
+    for (var i = 0; i < TERMINAL_STATUSES.length; i += 1) {
+      if (TERMINAL_STATUSES[i] === status) return true;
+    }
+    return false;
+  }
+
   var runtime = {
     available: !!api,
 
@@ -116,9 +250,12 @@
       initialized = lmsInit();
       if (initialized) {
         startedAt = Date.now();
-        // Signal tracking start per research §4: if the LMS reports "not attempted"
-        // some LMSes won't begin session tracking until we explicitly write a status.
-        if (lmsGet('cmi.core.lesson_status') === 'not attempted') {
+        // Some LMSes won't begin session tracking until we explicitly write
+        // a status. Idempotent: only write when current status is empty,
+        // 'not attempted', or otherwise non-terminal — never downgrade a
+        // completed/passed/failed run.
+        var current = lmsGet('cmi.core.lesson_status');
+        if (!isTerminal(current)) {
           lmsSet('cmi.core.lesson_status', 'incomplete');
           lmsCommit();
         }
@@ -165,12 +302,26 @@
     /**
      * SCORM 1.2 has ONE status field (cmi.core.lesson_status). Writing "passed"
      * AFTER "completed" overwrites "completed" — research §3.2. Callers must order
-     * terminal writes intentionally.
+     * terminal writes intentionally. Non-terminal writes (incomplete/browsed) are
+     * silently ignored when the LMS already reports a terminal state, so a late
+     * progress save can't downgrade a completion.
      */
     setStatus: function (status) {
       if (!initialized) return false;
       if (VALID_STATUSES.indexOf(status) < 0) return false;
+      if (status === 'incomplete' || status === 'browsed') {
+        var current = lmsGet('cmi.core.lesson_status');
+        if (isTerminal(current)) return true;
+      }
       return lmsSet('cmi.core.lesson_status', status);
+    },
+
+    /** cmi.core.exit — '', 'suspend', 'logout', or 'time-out' (SCORM 1.2 §3.4.2). */
+    setExit: function (value) {
+      if (!initialized) return false;
+      var v = value == null ? '' : String(value);
+      if (v !== '' && v !== 'suspend' && v !== 'logout' && v !== 'time-out') return false;
+      return lmsSet('cmi.core.exit', v);
     },
 
     commit: function () {
@@ -179,16 +330,38 @@
 
     terminate: function () {
       if (!initialized || terminated) return true;
+      var current = lmsGet('cmi.core.lesson_status');
+      // Bookmark intent before writing session_time: 'suspend' if the SCO is
+      // not yet terminal so the LMS knows to resume; '' otherwise.
+      if (isTerminal(current)) {
+        lmsSet('cmi.core.exit', '');
+      } else {
+        lmsSet('cmi.core.exit', 'suspend');
+      }
       lmsSet('cmi.core.session_time', formatSessionTime(Date.now() - startedAt));
       lmsCommit();
       var ok = lmsFinish();
       terminated = true;
       return ok;
     },
+
+    lastError: function () {
+      return lastErrorRecord;
+    },
+
+    setDebug: function (flag) {
+      debugEnabled = !!flag;
+    },
+
+    getApiVersion: function () {
+      return '1.2';
+    },
   };
 
   // Best-effort terminate on page unload so session_time and final status land.
-  window.addEventListener('beforeunload', function () {
+  // 'pagehide' fires reliably on bfcache + navigation paths where 'beforeunload'
+  // is increasingly throttled or skipped (Chromium, Safari).
+  window.addEventListener('pagehide', function () {
     try {
       runtime.terminate();
     } catch (e) {

@@ -63,12 +63,27 @@ describe('packageScorm12 — end-to-end', () => {
     const expected = [
       '_astro/runtime.js',
       '_astro/shared.css',
+      'adlcp_rootv1p2.xsd',
       'course/hello-runnable/index.html',
       'course/welcome/index.html',
+      'ims_xml.xsd',
+      'imscp_rootv1p1p2.xsd',
       'imsmanifest.xml',
+      'imsmd_rootv1p2p1.xsd',
       'lernkit-runtime/scorm12.js',
+      'metadata.xml',
     ].sort();
     expect(result.entries).toEqual(expected);
+  });
+
+  it('ships an external metadata.xml with the LOM that contains the course title', async () => {
+    const result = await packageScorm12(fixture(tmp));
+    const z = await JSZip.loadAsync(result.zip);
+    const metadata = await z.file('metadata.xml')?.async('string');
+    expect(metadata).toBeDefined();
+    expect(metadata).toContain('<lom xmlns="http://www.imsglobal.org/xsd/imsmd_rootv1p2p1"');
+    expect(metadata).toContain('Intro to Python');
+    expect(metadata).toContain('<language>en</language>');
   });
 
   it('produces a zip file that reopens via JSZip with the same contents', async () => {
@@ -124,5 +139,24 @@ describe('packageScorm12 — end-to-end', () => {
       metadata: { ...fixture(tmp).metadata, masteryScore: 1.5 },
     };
     await expect(packageScorm12(bad)).rejects.toThrow(/masteryScore/);
+  });
+
+  it('rejects entryLessonId that does not match any lesson', async () => {
+    const bad: CoursePackage = {
+      ...fixture(tmp),
+      metadata: { ...fixture(tmp).metadata, singleSco: true, entryLessonId: 'no-such-lesson' },
+    };
+    await expect(packageScorm12(bad)).rejects.toThrow(/no-such-lesson/);
+  });
+
+  it('single-SCO mode produces a zip with one SCO and all lesson HTMLs reachable as files', async () => {
+    const result = await packageScorm12({
+      ...fixture(tmp),
+      metadata: { ...fixture(tmp).metadata, singleSco: true, entryLessonId: 'welcome' },
+    });
+    expect(result.manifest).toMatch(/adlcp:scormtype="sco"/);
+    expect((result.manifest.match(/adlcp:scormtype="sco"/g) ?? []).length).toBe(1);
+    expect(result.entries).toContain('course/welcome/index.html');
+    expect(result.entries).toContain('course/hello-runnable/index.html');
   });
 });

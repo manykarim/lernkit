@@ -6,6 +6,10 @@ dist-packages/
 build/
 *.tsbuildinfo
 
+# Reference SCORM/xAPI packages used for spec-comparison investigations.
+# Large vendor exports; not part of the source.
+docs/reference_packages/
+
 # Self-hosted Pyodide assets (copied from node_modules by apps/docs/scripts/copy-pyodide.mjs)
 apps/docs/public/pyodide/
 

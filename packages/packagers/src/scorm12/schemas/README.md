@@ -1,24 +1,26 @@
-# SCORM 1.2 XSD schemas (bundled alongside manifests)
+# SCORM 1.2 XSD schemas (bundled into every package zip by default)
 
-This directory holds the four ADLNet SCORM 1.2 Content Aggregation Model schema files that some strict LMSes expect to find co-resident with the package's `imsmanifest.xml`. When present, the packager copies them into the zip root; when absent, the packager still produces a valid zip (SCORM Cloud, Rustici Engine, and recent Moodle tolerate their absence — see research §3.2).
+This directory holds the four ADLNet SCORM 1.2 Content Aggregation Model schemas. The packager's `loadScorm12Schemas()` reads any `.xsd` file present here and ships it at the zip root so importers that follow `xsi:schemaLocation` from `imsmanifest.xml` can resolve them.
 
-## Files that should live here
+## Bundled files
 
-| File | Origin |
-|---|---|
-| `imscp_rootv1p1p2.xsd` | IMS Content Packaging |
-| `imsmd_rootv1p2p1.xsd` | IMS Learning Object Metadata |
-| `adlcp_rootv1p2.xsd` | ADL Content Packaging extension |
-| `ims_xml.xsd` | Supporting XML base types |
+| File | Origin | Used by |
+|---|---|---|
+| `imscp_rootv1p1p2.xsd` | IMS Content Packaging | `<manifest>`, `<organizations>`, `<resources>`, `<file>` |
+| `imsmd_rootv1p2p1.xsd` | IMS Learning Object Metadata | external `metadata.xml` |
+| `adlcp_rootv1p2.xsd` | ADL Content Packaging extension | `adlcp:scormtype`, `adlcp:masteryscore`, `adlcp:location` |
+| `ims_xml.xsd` | Supporting XML base types | imported by the others |
 
-All four are freely redistributable from the ADL SCORM 1.2 Content Aggregation Model download. They are not checked into this repository because they belong upstream, not to Lernkit.
+All four are freely redistributable from the ADL SCORM 1.2 Content Aggregation Model download. The license explicitly permits inclusion in downstream SCORM packages — that is the intended distribution model.
 
-## How to populate
+## Why ship them
 
-1. Download the ADL SCORM 1.2 CAM zip from the ADL distribution mirror.
-2. Extract the four files above into this directory.
-3. Rebuild `@lernkit/packagers` — the `copy-assets.mjs` post-build step bundles them into `dist/scorm12/schemas/`.
+Older / strict LMS importers — SumTotal, Saba, certain SAP SuccessFactors builds — run XSD validation on import and follow the `xsi:schemaLocation` references. Resolving those URIs to local files in the zip root (`adlcp_rootv1p2.xsd` etc.) is the difference between import-success and import-failure for those products. SCORM Cloud, Rustici Engine, recent Moodle, Articulate, and most modern web LMSes tolerate their absence — but bundling costs ~10 KB compressed and never hurts compatibility.
 
-## Legal
+## To omit them
 
-These schemas ship under the original ADLNet license. Including them in a downstream SCORM package is explicitly permitted by the SCORM specification and is the intended distribution model.
+Delete the `.xsd` files from this directory and rebuild. `loadScorm12Schemas()` returns `[]` when the directory is empty, and the packager skips the bundling step. The manifest still references the schemas via `xsi:schemaLocation`, but lenient importers ignore the missing files.
+
+## Provenance
+
+The four files were sourced from the ADLNet SCORM 1.2 Content Aggregation Model distribution (preserved verbatim — bytes match the schemas shipped inside reference SCORM 1.2 packages from EasyGenerator and other major authoring tools). They are byte-stable across all reputable SCORM 1.2 authoring tools; there is no v1.2.1 of these schemas. Re-fetching them is only needed if a future SCORM 1.2 spec revision is published, which is not expected.

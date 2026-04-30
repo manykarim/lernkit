@@ -55,7 +55,9 @@ async function boot(): Promise<PyodideLike> {
     // Resolve the pyodide ESM module URL relative to the worker's own location.
     // The worker script ships under /_astro/ (hashed), but the pyodide assets
     // live at /pyodide/ alongside /_astro/ — so we go up one directory then into pyodide/.
-    const pyodideModuleUrl = new URL('../pyodide/pyodide.mjs', self.location.href).href;
+    // `.module.js` rather than `.mjs` so LMS file servers without a `.mjs` MIME
+    // mapping still serve `application/javascript` (see scripts/copy-pyodide.mjs).
+    const pyodideModuleUrl = new URL('../pyodide/pyodide.module.js', self.location.href).href;
     const pyodideIndexUrl = new URL('../pyodide/', self.location.href).href;
 
     // Vite must NOT try to resolve this dynamic import at build time — it's a

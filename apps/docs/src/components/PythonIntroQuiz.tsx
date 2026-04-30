@@ -1,26 +1,29 @@
 import { Quiz, MCQ, TrueFalse } from '@lernkit/components';
-import { XapiStubAdapter } from '@lernkit/tracker';
 import { useMemo, useRef, useState, type ReactElement } from 'react';
+import { pickTracker } from '../lib/pick-tracker';
 
 /**
  * Sample quiz island. In Astro this is hydrated on the client with
  * `client:visible` — it appears inline in the sample-course MDX page.
  *
- * The tracker is a fresh `XapiStubAdapter` per page mount so the quiz emits
- * real xAPI 2.0 statements into an in-memory queue. The panel below the quiz
- * re-renders that queue after submit so authors can eyeball the wire format.
- *
- * Inside a SCORM 1.2 package produced by `@lernkit/packagers`, the tracker
- * would be `LernkitScorm12Adapter` instead — same contract, different wire.
+ * The tracker is selected at runtime by `pickTracker`: inside a SCORM 1.2
+ * package the LMS-bridge adapter is used; in dev preview / plain web we fall
+ * back to the in-memory xAPI stub so authors can still eyeball the wire format
+ * in the panel below the quiz.
  */
 export default function PythonIntroQuiz(): ReactElement {
-  const tracker = useMemo(() => new XapiStubAdapter('python-intro-check'), []);
+  const picked = useMemo(() => pickTracker('python-intro-check'), []);
+  const tracker = picked.tracker;
   const initOnce = useRef(false);
-  const [statements, setStatements] = useState(() => tracker.statements);
+  const [statements, setStatements] = useState(() =>
+    picked.kind === 'xapi-stub' ? picked.tracker.statements : [],
+  );
 
   if (!initOnce.current) {
     initOnce.current = true;
-    void tracker.init().then(() => setStatements(tracker.statements));
+    void tracker.init().then(() => {
+      if (picked.kind === 'xapi-stub') setStatements(picked.tracker.statements);
+    });
   }
 
   return (
@@ -30,7 +33,9 @@ export default function PythonIntroQuiz(): ReactElement {
         title="Check: Python basics"
         passingScore={0.5}
         tracker={tracker}
-        onGraded={() => setStatements(tracker.statements)}
+        onGraded={() => {
+          if (picked.kind === 'xapi-stub') setStatements(picked.tracker.statements);
+        }}
       >
         <MCQ
           id="fn-keyword"
@@ -52,14 +57,14 @@ export default function PythonIntroQuiz(): ReactElement {
         />
       </Quiz>
 
-      <details className="lernkit-demo__xapi">
-        <summary>
-          xAPI statements emitted ({statements.length})
-        </summary>
-        <pre aria-label="xAPI statement queue">
-          <code>{JSON.stringify(statements, null, 2)}</code>
-        </pre>
-      </details>
+      {picked.kind === 'xapi-stub' ? (
+        <details className="lernkit-demo__xapi">
+          <summary>xAPI statements emitted ({statements.length})</summary>
+          <pre aria-label="xAPI statement queue">
+            <code>{JSON.stringify(statements, null, 2)}</code>
+          </pre>
+        </details>
+      ) : null}
     </div>
   );
 }

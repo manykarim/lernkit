@@ -55,6 +55,11 @@ const COURSE_MASTERY_SCORE = process.env.COURSE_MASTERY_SCORE
   : 0.8;
 const COURSE_VERSION = process.env.COURSE_VERSION ?? null; // fallback = app version
 const INCLUDE_PYODIDE_RUNTIME = isTruthy(process.env.INCLUDE_PYODIDE_RUNTIME);
+// Single-SCO topology pairs with Astro's <ClientRouter /> in apps/docs:
+// in-page navigation never triggers pagehide → LMSFinish, so the LMS sees
+// exactly one SCORM session for the whole course.
+const SINGLE_SCO = isTruthy(process.env.SINGLE_SCO ?? '1');
+const ENTRY_LESSON_ID = process.env.ENTRY_LESSON_ID ?? null;
 
 const outDir = join(appRoot, 'dist-packages', 'scorm12');
 
@@ -188,6 +193,12 @@ async function main() {
     );
   }
 
+  // In single-SCO mode, prefer the course-root overview as the entry SCO so the
+  // learner lands on the course's index.html when the LMS launches the package.
+  const resolvedEntryLessonId =
+    ENTRY_LESSON_ID ??
+    (SINGLE_SCO ? lessons.find((l) => l.href === `${COURSE_ROOT_DIR}/index.html`)?.id ?? null : null);
+
   const result = await packageScorm12({
     metadata: {
       courseId: COURSE_ID,
@@ -197,6 +208,8 @@ async function main() {
       language: COURSE_LANGUAGE,
       organization: { name: 'Lernkit', identifier: 'lernkit' },
       masteryScore: COURSE_MASTERY_SCORE,
+      singleSco: SINGLE_SCO,
+      ...(resolvedEntryLessonId ? { entryLessonId: resolvedEntryLessonId } : {}),
     },
     lessons,
     distDir,
@@ -214,6 +227,8 @@ async function main() {
   console.log(`  lessons:  ${lessons.length}`);
   console.log(`  entries:  ${result.entries.length}`);
   console.log(`  pyodide:  ${INCLUDE_PYODIDE_RUNTIME ? 'bundled' : 'not bundled'}`);
+  console.log(`  topology: ${SINGLE_SCO ? 'single-SCO' : 'multi-SCO'}`);
+  if (SINGLE_SCO) console.log(`  entry:    ${resolvedEntryLessonId ?? '(first lesson)'}`);
 }
 
 main().catch((e) => {

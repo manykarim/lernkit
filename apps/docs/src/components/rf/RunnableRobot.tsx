@@ -165,12 +165,30 @@ export function RunnableRobot({
               >
                 {showLog ? 'Hide log.html' : 'Show log.html'}
               </button>
+              <a
+                className="lernkit-runnable-robot__download-log"
+                href={logBlobUrl}
+                download={`${fileName.replace(/\.robot$/, '')}-log.html`}
+              >
+                Download log.html
+              </a>
               {showLog ? (
+                /*
+                 * `allow-scripts` lets RF's inline JS render the report;
+                 * `allow-same-origin` keeps the iframe at the parent's blob origin
+                 * so RF's sessionStorage-backed UI state (collapsed-suite memory,
+                 * keyword expansion state, etc.) actually works. Browsers throw
+                 * `SecurityError` on `sessionStorage` access from opaque-origin
+                 * sandboxed iframes, which RF surfaces as a degraded render.
+                 * For our case the iframe content is RF-generated (we ship the
+                 * wheel) — same trust level as the rest of the package — so the
+                 * standard "avoid combining these tokens" caveat doesn't apply.
+                 */
                 <iframe
                   src={logBlobUrl}
                   title="Robot Framework log.html"
                   className="lernkit-runnable-robot__log-frame"
-                  sandbox="allow-same-origin"
+                  sandbox="allow-scripts allow-same-origin"
                 />
               ) : null}
             </div>

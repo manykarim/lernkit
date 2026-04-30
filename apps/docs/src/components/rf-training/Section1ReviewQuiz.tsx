@@ -1,20 +1,25 @@
 import { MCQ, Quiz, TrueFalse } from '@lernkit/components';
-import { XapiStubAdapter } from '@lernkit/tracker';
 import { useMemo, useRef, useState, type ReactElement } from 'react';
+import { pickTracker } from '../../lib/pick-tracker';
 
 /**
  * Section 1 review quiz. Six questions drawn from the Section 1 flipcard concepts.
- * Emits xAPI via XapiStubAdapter into an in-memory queue, rendered below the quiz
- * so authors can inspect the wire format.
+ * Tracker is selected by `pickTracker`: SCORM 1.2 LMS-bridge inside a packaged
+ * SCO, in-memory xAPI stub everywhere else.
  */
 export default function Section1ReviewQuiz(): ReactElement {
-  const tracker = useMemo(() => new XapiStubAdapter('rf-training/section-1/review'), []);
+  const picked = useMemo(() => pickTracker('rf-training/section-1/review'), []);
+  const tracker = picked.tracker;
   const initOnce = useRef(false);
-  const [statements, setStatements] = useState(() => tracker.statements);
+  const [statements, setStatements] = useState(() =>
+    picked.kind === 'xapi-stub' ? picked.tracker.statements : [],
+  );
 
   if (!initOnce.current) {
     initOnce.current = true;
-    void tracker.init().then(() => setStatements(tracker.statements));
+    void tracker.init().then(() => {
+      if (picked.kind === 'xapi-stub') setStatements(picked.tracker.statements);
+    });
   }
 
   return (
@@ -24,7 +29,9 @@ export default function Section1ReviewQuiz(): ReactElement {
         title="Section 1 review"
         passingScore={0.7}
         tracker={tracker}
-        onGraded={() => setStatements(tracker.statements)}
+        onGraded={() => {
+          if (picked.kind === 'xapi-stub') setStatements(picked.tracker.statements);
+        }}
       >
         <MCQ
           id="venv-purpose"
@@ -93,12 +100,14 @@ export default function Section1ReviewQuiz(): ReactElement {
         />
       </Quiz>
 
-      <details className="lernkit-demo__xapi">
-        <summary>xAPI statements emitted ({statements.length})</summary>
-        <pre aria-label="xAPI statement queue">
-          <code>{JSON.stringify(statements, null, 2)}</code>
-        </pre>
-      </details>
+      {picked.kind === 'xapi-stub' ? (
+        <details className="lernkit-demo__xapi">
+          <summary>xAPI statements emitted ({statements.length})</summary>
+          <pre aria-label="xAPI statement queue">
+            <code>{JSON.stringify(statements, null, 2)}</code>
+          </pre>
+        </details>
+      ) : null}
     </div>
   );
 }

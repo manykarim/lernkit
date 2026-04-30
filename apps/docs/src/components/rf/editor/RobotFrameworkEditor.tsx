@@ -1,6 +1,11 @@
 import { autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
-import { bracketMatching, indentOnInput } from '@codemirror/language';
+import {
+  bracketMatching,
+  defaultHighlightStyle,
+  indentOnInput,
+  syntaxHighlighting,
+} from '@codemirror/language';
 import { EditorState, type Extension } from '@codemirror/state';
 import {
   EditorView,
@@ -98,6 +103,11 @@ export function RobotFrameworkEditor({
       autocompletion({ override: [completionSource], activateOnTyping: false }),
       keymap.of([...defaultKeymap, ...historyKeymap, indentWithTab]),
       robotFrameworkLanguage,
+      // Without this extension, CodeMirror computes token tags from
+      // robotFrameworkLanguage but never paints them — the editor renders
+      // monochrome. `fallback: true` keeps any future per-tag overrides
+      // (or theme-provided styles) winning over this default.
+      syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
       EditorView.editable.of(!readOnly),
       EditorState.readOnly.of(readOnly),
       EditorView.theme({

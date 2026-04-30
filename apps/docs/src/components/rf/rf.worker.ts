@@ -83,7 +83,12 @@ async function bootPyodide(onProgress: RobotProgressHandler): Promise<PyodideLik
   pyodidePromise = (async () => {
     const t0 = now();
     onProgress({ phase: 'pyodide', message: 'Loading Pyodide…', elapsedMs: 0 });
-    const pyodideModuleUrl = new URL('../pyodide/pyodide.mjs', self.location.href).href;
+    // `.module.js` rather than `.mjs` so file servers that don't have a `.mjs`
+    // MIME mapping (e.g. PeopleFluent / Cornerstone defaults) still return
+    // `application/javascript` and the browser doesn't reject the module import
+    // under strict-MIME checking. The `.js` companion is written by
+    // `scripts/copy-pyodide.mjs`.
+    const pyodideModuleUrl = new URL('../pyodide/pyodide.module.js', self.location.href).href;
     const pyodideIndexUrl = new URL('../pyodide/', self.location.href).href;
     const mod = (await import(/* @vite-ignore */ pyodideModuleUrl)) as {
       loadPyodide(opts: { indexURL: string }): Promise<PyodideLike>;
@@ -102,7 +107,11 @@ async function ensureRobotFramework(py: PyodideLike, onProgress: RobotProgressHa
     const t0 = now();
     onProgress({ phase: 'wheel', message: 'Fetching robotframework wheel…', elapsedMs: 0 });
     const wheelUrl = new URL(`../pyodide/wheels/${DEFAULT_WHEEL_NAME}`, self.location.href).href;
-    const response = await fetch(wheelUrl, { credentials: 'omit' });
+    // `credentials: 'same-origin'` is the fetch default; we name it explicitly so reviewers
+    // see we're NOT opting out of cookies/auth headers — the wheel is a same-origin asset of
+    // the SCO, and LMSes (notably SCORM Cloud) gate package files behind the registration's
+    // session cookie. Omitting credentials here returns 401, not 200.
+    const response = await fetch(wheelUrl, { credentials: 'same-origin' });
     if (!response.ok) {
       throw new Error(`Failed to fetch ${wheelUrl}: ${response.status} ${response.statusText}`);
     }

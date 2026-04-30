@@ -42,6 +42,10 @@ interface LernkitScorm12Runtime {
   setStatus(status: string): boolean;
   commit(): boolean;
   terminate(): boolean;
+  setExit?(value: string): boolean;
+  lastError?(): { code: number; message: string; diagnostic: string } | null;
+  setDebug?(flag: boolean): void;
+  getApiVersion?(): string;
 }
 
 declare global {

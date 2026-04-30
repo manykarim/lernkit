@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Frameset//EN" "http://www.w3.org/TR/REC-html40/frameset.dtd"><html lang='en' class='full-height'><head><title>PeopleFluent LMS</title><meta content='IE=edge' http-equiv='X-UA-Compatible'><script language='JavaScript'>
+<!--
+var API = null;
+var API_1484_11 = null;
+var autoCommitTimer;
+function setMenuVisible(value) {
+   if (window.parent)
+      window.parent.setMenuVisible(value);
+}
+function setButtonsVisible(value) {
+   if (window.parent)
+      window.parent.setButtonsVisible(value);
+}
+function loadScoFrame() {
+   window.sco.location='\/schenker\/nd\/fresco\/content\/revisions\/glob_it_cdp_skills_TM_12\/8\/rf-training\/index.html';
+   autoCommitLoop(true);
+}
+function autoCommitLoop(start) {
+   if (start === true) {
+      autoCommitTimer = setTimeout(function() {
+         API.LMSCommit('');
+         API_1484_11.Commit('');
+         
+         autoCommitLoop(start);
+      }, 60000);
+   } else {
+      clearTimeout(autoCommitTimer);
+      console.log('stop autocommit');
+   }
+}
+
+// -->
+</script><script src='/schenker/nd/fresco/javascript/views/netd-namespaces.js?25.02.4' language='JavaScript'></script><script src='/schenker/nd/fresco/javascript/views/CourseCommonsForOpenedWindow.js?25.02.4' language='JavaScript'></script><![if !IE]><link href='/schenker/nd/fresco/styles_core/base.css' type='text/css' rel='stylesheet'><![endif]><!--[if IE]><link href='/schenker/nd/fresco/styles_core/base.IE.css' type='text/css' rel='stylesheet'><![endif]--></head><body onLoad="API = window.apiadapter.document.APIAdapter; API.version = '1.0'; API_1484_11 = window.apiadapter.document.APIAdapter; API_1484_11.version = '1.0'; setTimeout('loadScoFrame()', 1000); course.commons.openedWin.requestMonitorWindowCloseForMarkComplete();" class='no-margin no-padding overflow-hidden full-width full-height'><div class='full-width full-height'><div class='invisible'><iframe src='/schenker/nd/fresco/javascript/scormapi_js/Scormapi_js.html?AICC_SID=PREVIEW-50104718&AICC_URL=%2Fschenker%2Fservlet%2Fekp%2Faicc&SEND_INTERACTIONS=true&CODEBASE=https%3A%2F%2Flearning.dbschenker.com%2Fschenker%2Fservlet%2Fekp&JSBASE=%2Fschenker%2Fnd%2Ffresco%2Fjavascript&autoCommitInterval=60000' mozallowfullscreen='true' webkitallowfullscreen='true' id='apiadapter' name='apiadapter' allowfullscreen='true' frameborder='0'></iframe></div><div class='full-width full-height'><iframe src='' mozallowfullscreen='true' class='full-width full-height' webkitallowfullscreen='true' id='sco' name='sco' allowfullscreen='true' seamless='seamless' frameborder='0'></iframe></div></div></body></html>

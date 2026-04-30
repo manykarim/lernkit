@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest
     identifier="{{ manifestIdentifier }}"
     version="{{ courseVersion }}"
     xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
     xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
-    xmlns:imsmd="http://www.imsglobal.org/xsd/imsmd_rootv1p2p1"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
                         http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd
@@ -12,29 +11,48 @@
   <metadata>
     <schema>ADL SCORM</schema>
     <schemaversion>1.2</schemaversion>
-    <imsmd:lom>
-      <imsmd:general>
-        <imsmd:title>
-          <imsmd:langstring xml:lang="{{ language }}">{{ courseTitle }}</imsmd:langstring>
-        </imsmd:title>
-        {% if courseDescription %}
-        <imsmd:description>
-          <imsmd:langstring xml:lang="{{ language }}">{{ courseDescription }}</imsmd:langstring>
-        </imsmd:description>
-        {% endif %}
-        <imsmd:language>{{ language }}</imsmd:language>
-      </imsmd:general>
-    </imsmd:lom>
+    <adlcp:location>metadata.xml</adlcp:location>
   </metadata>
 
+  {% if singleSco %}
   <organizations default="{{ defaultOrganizationIdentifier }}">
-    <organization identifier="{{ organizationIdentifier }}" structure="hierarchical">
+    <organization identifier="{{ organizationIdentifier }}">
+      <title>{{ courseTitle }}</title>
+      <item identifier="item-entry" identifierref="res-entry" isvisible="true">
+        <title>{{ courseTitle }}</title>
+        {% if entryMasteryScorePercent %}
+        <adlcp:masteryscore>{{ entryMasteryScorePercent }}</adlcp:masteryscore>
+        {% endif %}
+      </item>
+    </organization>
+  </organizations>
+
+  <resources>
+    <resource identifier="res-entry" type="webcontent" adlcp:scormtype="sco" href="{{ entryHref }}">
+      {% for href in allLessonHrefs %}
+      <file href="{{ href }}"/>
+      {% endfor %}
+      {% if sharedAssets.length > 0 %}
+      <dependency identifierref="shared-assets"/>
+      {% endif %}
+    </resource>
+    {% if sharedAssets.length > 0 %}
+    <resource identifier="shared-assets" type="webcontent" adlcp:scormtype="asset">
+      {% for file in sharedAssets %}
+      <file href="{{ file }}"/>
+      {% endfor %}
+    </resource>
+    {% endif %}
+  </resources>
+  {% else %}
+  <organizations default="{{ defaultOrganizationIdentifier }}">
+    <organization identifier="{{ organizationIdentifier }}">
       <title>{{ organizationTitle }}</title>
       {% for lesson in lessons %}
       <item identifier="item-{{ loop.index }}" identifierref="{{ lesson.identifier }}" isvisible="true">
         <title>{{ lesson.title }}</title>
-        {% if masteryScorePercent %}
-        <adlcp:masteryscore>{{ masteryScorePercent }}</adlcp:masteryscore>
+        {% if lesson.masteryScorePercent %}
+        <adlcp:masteryscore>{{ lesson.masteryScorePercent }}</adlcp:masteryscore>
         {% endif %}
       </item>
       {% endfor %}
@@ -47,7 +65,18 @@
       {% for file in lesson.files %}
       <file href="{{ file }}"/>
       {% endfor %}
+      {% if sharedAssets.length > 0 %}
+      <dependency identifierref="shared-assets"/>
+      {% endif %}
     </resource>
     {% endfor %}
+    {% if sharedAssets.length > 0 %}
+    <resource identifier="shared-assets" type="webcontent" adlcp:scormtype="asset">
+      {% for file in sharedAssets %}
+      <file href="{{ file }}"/>
+      {% endfor %}
+    </resource>
+    {% endif %}
   </resources>
+  {% endif %}
 </manifest>
