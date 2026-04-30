@@ -24,6 +24,10 @@ COPY apps/docs /app/apps/docs
 COPY packages /app/packages
 COPY biome.json /app/biome.json
 
+# Build workspace deps first so apps/docs's astro check can resolve the
+# `dist/` outputs of @lernkit/components / @lernkit/tracker / @lernkit/packagers.
+RUN pnpm --filter=@lernkit/components --filter=@lernkit/tracker --filter=@lernkit/packagers build
+
 # Build the docs app
 RUN pnpm --filter=@lernkit/docs build
 
