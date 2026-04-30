@@ -1,7 +1,7 @@
 # Astro static-site build image. Produces a static dist and serves via nginx.
 # Phase 0: plain Starlight site with sample course.
 
-FROM node:22-alpine AS builder
+FROM node:25-alpine AS builder
 
 RUN corepack enable pnpm
 
