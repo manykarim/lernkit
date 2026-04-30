@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lernkit — Mock LMS demo (Robot Framework training)</title>
+  <meta name="description" content="A mock SCORM 1.2 LMS that frames the Lernkit Robot Framework training course and logs every cmi.* call live.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: #111827; background: #f9fafb; }
+    .lms-shell { display: grid; grid-template-rows: 56px 1fr; grid-template-columns: minmax(0, 1fr) 380px; height: 100vh; }
+    @media (max-width: 900px) {
+      .lms-shell { grid-template-columns: 1fr; grid-template-rows: 56px 1fr 320px; }
+    }
+    .lms-header { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: #1f2937; color: white; gap: 16px; }
+    .lms-header h1 { font-size: 15px; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px; }
+    .lms-header .badges { display: flex; gap: 8px; align-items: center; }
+    .lms-header .badge { background: #374151; padding: 4px 10px; border-radius: 999px; font-size: 11px; letter-spacing: 0.02em; text-transform: uppercase; font-weight: 500; }
+    .lms-header .badge.live { background: #065f46; }
+    .lms-header a { color: #93c5fd; font-size: 12px; text-decoration: none; }
+    .lms-header a:hover { text-decoration: underline; }
+    .lms-main { background: white; overflow: hidden; min-width: 0; }
+    .lms-main iframe { width: 100%; height: 100%; border: 0; background: white; display: block; }
+    .lms-panel { background: #f3f4f6; display: flex; flex-direction: column; height: 100%; min-width: 0; border-left: 1px solid #e5e7eb; }
+    @media (max-width: 900px) { .lms-panel { border-left: 0; border-top: 1px solid #e5e7eb; } }
+    .lms-panel-header { padding: 12px 16px; background: #374151; color: white; flex-shrink: 0; }
+    .lms-panel-header h2 { margin: 0; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .lms-panel-header .count { background: #4b5563; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; }
+    .lms-panel-header .actions { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+    .lms-panel-header button { background: #4b5563; color: white; border: 0; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 500; transition: background 120ms; }
+    .lms-panel-header button:hover { background: #6b7280; }
+    .lms-panel-header button.danger { background: #b91c1c; }
+    .lms-panel-header button.danger:hover { background: #dc2626; }
+    .lms-log { flex: 1; overflow: auto; padding: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; line-height: 1.5; background: #f9fafb; }
+    .lms-log-entry { padding: 6px 12px; border-bottom: 1px solid #e5e7eb; word-break: break-word; }
+    .lms-log-entry .ts { color: #9ca3af; margin-right: 6px; font-size: 10px; }
+    .lms-log-entry .fn { font-weight: 600; color: #2563eb; }
+    .lms-log-entry .arg { color: #047857; }
+    .lms-log-entry .ret { color: #6b7280; }
+    .lms-log-entry.set .fn { color: #b45309; }
+    .lms-log-entry.lifecycle { background: #fef3c7; }
+    .lms-log-entry.lifecycle .fn { color: #b91c1c; }
+    .lms-log-entry.error { background: #fee2e2; }
+    .lms-log-entry.note { color: #6b7280; font-style: italic; padding: 12px; text-align: center; border-bottom: 0; }
+    .lms-log-entry.note.empty { color: #9ca3af; }
+    .lms-banner { padding: 8px 16px; background: #dbeafe; color: #1e40af; font-size: 12px; line-height: 1.45; border-bottom: 1px solid #bfdbfe; }
+    .lms-banner strong { font-weight: 600; }
+  </style>
+</head>
+<body>
+<div class="lms-shell">
+  <header class="lms-header">
+    <h1>📚 Lernkit Mock LMS <span style="opacity:.6; font-weight:400;">— Robot Framework training</span></h1>
+    <div class="badges">
+      <span class="badge live">SCORM 1.2 live</span>
+      <a href="../">← back to Lernkit docs</a>
+    </div>
+  </header>
+  <main class="lms-main">
+    <iframe id="sco" src="./sco/rf-training/index.html" title="Course content" allow="cross-origin-isolated"></iframe>
+  </main>
+  <aside class="lms-panel">
+    <div class="lms-panel-header">
+      <h2>SCORM API call log <span class="count" id="count">0</span></h2>
+      <div class="actions">
+        <button id="clear-log" type="button">Clear log</button>
+        <button id="restart" type="button">Reload SCO</button>
+        <button id="force-finish" class="danger" type="button">Force LMSFinish</button>
+      </div>
+    </div>
+    <div class="lms-banner">
+      <strong>This is a demo.</strong> The frame on the left is the same Robot Framework training packaged as a SCORM 1.2 SCO. The panel here intercepts the eight <code>LMS*</code> calls a real LMS would handle and shows what the course is reading and writing.
+    </div>
+    <div class="lms-log" id="log"><div class="lms-log-entry note empty">Waiting for the SCO to call <code>LMSInitialize</code>…</div></div>
+  </aside>
+</div>
+<script>
+(function () {
+  // Mock SCORM 1.2 LMS API. The packaged SCO walks window.parent to find this
+  // object (see scorm12-runtime.js#findAPI), so as long as we're framing the
+  // SCO same-origin and expose `window.API` here, the bootstrap finds it.
+
+  var cmiData = {
+    'cmi.core.student_id': 'demo-learner-001',
+    'cmi.core.student_name': 'Demo, Learner',
+    'cmi.core.lesson_location': '',
+    'cmi.core.lesson_status': 'not attempted',
+    'cmi.core.score.raw': '',
+    'cmi.core.score.min': '0',
+    'cmi.core.score.max': '100',
+    'cmi.core.session_time': '0000:00:00',
+    'cmi.core.total_time': '0000:00:00',
+    'cmi.core.entry': 'ab-initio',
+    'cmi.core.exit': '',
+    'cmi.core.credit': 'credit',
+    'cmi.core.lesson_mode': 'normal',
+    'cmi.suspend_data': '',
+    'cmi.launch_data': '',
+    'cmi.student_data.mastery_score': '0.7',
+    'cmi.student_data.max_time_allowed': '',
+    'cmi.student_data.time_limit_action': 'continue,no message',
+    'cmi.student_preference.audio': '0',
+    'cmi.student_preference.language': '',
+    'cmi.student_preference.speed': '0',
+    'cmi.student_preference.text': '0',
+    'cmi.interactions._count': '0',
+    'cmi.objectives._count': '0',
+  };
+
+  var lastError = '0';
+  var initialized = false;
+  var finished = false;
+
+  var logEl = document.getElementById('log');
+  var countEl = document.getElementById('count');
+  var firstLog = true;
+  var entryCount = 0;
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function render(kind, fn, args, ret) {
+    if (firstLog) { logEl.innerHTML = ''; firstLog = false; }
+    var div = document.createElement('div');
+    div.className = 'lms-log-entry ' + kind;
+    var ts = new Date().toLocaleTimeString();
+    var argParts = args.map(function (a) {
+      return '"' + escapeHtml(a) + '"';
+    }).join(', ');
+    div.innerHTML =
+      '<span class="ts">' + ts + '</span>' +
+      '<span class="fn">' + escapeHtml(fn) + '</span>(' +
+      '<span class="arg">' + argParts + '</span>) → ' +
+      '<span class="ret">' + escapeHtml(JSON.stringify(ret)) + '</span>';
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+    entryCount += 1;
+    countEl.textContent = String(entryCount);
+  }
+
+  var errorStrings = {
+    '0':   'No error',
+    '101': 'General exception',
+    '201': 'Invalid argument error',
+    '202': 'Element cannot have children',
+    '203': 'Element not an array - cannot have count',
+    '301': 'Not initialized',
+    '401': 'Not implemented error',
+    '402': 'Invalid set value, element is a keyword',
+    '403': 'Element is read only',
+    '404': 'Element is write only',
+    '405': 'Incorrect data type',
+  };
+
+  window.API = {
+    LMSInitialize: function (param) {
+      var ret;
+      if (initialized || finished) { lastError = '101'; ret = 'false'; }
+      else { initialized = true; lastError = '0'; ret = 'true'; }
+      render('lifecycle', 'LMSInitialize', [param], ret);
+      return ret;
+    },
+    LMSFinish: function (param) {
+      var ret;
+      if (initialized && !finished) { initialized = false; finished = true; lastError = '0'; ret = 'true'; }
+      else { lastError = '301'; ret = 'false'; }
+      render('lifecycle', 'LMSFinish', [param], ret);
+      return ret;
+    },
+    LMSGetValue: function (key) {
+      if (!initialized) { lastError = '301'; render('error', 'LMSGetValue', [key], ''); return ''; }
+      var v = Object.prototype.hasOwnProperty.call(cmiData, key) ? cmiData[key] : '';
+      lastError = '0';
+      render('get', 'LMSGetValue', [key], v);
+      return v;
+    },
+    LMSSetValue: function (key, value) {
+      if (!initialized) { lastError = '301'; render('error', 'LMSSetValue', [key, value], 'false'); return 'false'; }
+      cmiData[key] = String(value);
+      lastError = '0';
+      render('set', 'LMSSetValue', [key, value], 'true');
+      return 'true';
+    },
+    LMSCommit: function (param) {
+      if (!initialized) { lastError = '301'; render('error', 'LMSCommit', [param], 'false'); return 'false'; }
+      lastError = '0';
+      render('lifecycle', 'LMSCommit', [param], 'true');
+      return 'true';
+    },
+    LMSGetLastError: function () { return lastError; },
+    LMSGetErrorString: function (code) { return errorStrings[String(code)] || ''; },
+    LMSGetDiagnostic: function (code) { return errorStrings[String(code)] || ''; },
+  };
+
+  document.getElementById('clear-log').addEventListener('click', function () {
+    logEl.innerHTML = '<div class="lms-log-entry note">Log cleared.</div>';
+    firstLog = true;
+    entryCount = 0;
+    countEl.textContent = '0';
+  });
+
+  document.getElementById('force-finish').addEventListener('click', function () {
+    if (initialized) {
+      window.API.LMSFinish('');
+    } else {
+      render('note', '(force-finish)', [], 'noop — already finished or never initialized');
+    }
+  });
+
+  document.getElementById('restart').addEventListener('click', function () {
+    initialized = false;
+    finished = false;
+    lastError = '0';
+    var iframe = document.getElementById('sco');
+    iframe.src = iframe.src;
+    render('note', '(reload)', [], 'iframe reloaded; SCO will re-initialize');
+  });
+})();
+</script>
+</body>
+</html>

@@ -14,3 +14,9 @@ docs/api/tracker/
 # course preview). Local builds keep the directory empty unless you run
 # `cp -r ../docs/dist/. static/training/` yourself.
 static/training/
+
+# Unzipped SCORM 1.2 SCO produced by the GH Pages deploy workflow (Flavor 2
+# mock-LMS demo). The wrapper at static/training-lms-demo/index.html is
+# tracked; the sco/ subdir gets populated from apps/docs/dist-packages/scorm12/
+# at build time.
+static/training-lms-demo/sco/
