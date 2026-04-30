@@ -34,7 +34,7 @@
     "@codemirror/view": "^6.36.1",
     "@lernkit/components": "workspace:*",
     "@lernkit/tracker": "workspace:*",
-    "astro": "5.1.1",
+    "astro": "6.2.1",
     "comlink": "^4.4.2",
     "pyodide": "^0.29.3",
     "react": "19.0.0",
