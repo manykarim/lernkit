@@ -37,33 +37,46 @@ export function RunnableRobot({
   const [code, setCode] = useState(initialCode);
   const [result, setResult] = useState<RobotRunResult | null>(null);
   const [showLog, setShowLog] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const editorId = useId();
-  const previousBlobUrlRef = useRef<string | null>(null);
+  const previousBlobsRef = useRef<readonly string[]>([]);
 
-  const logBlobUrl = useMemo<string | null>(() => {
-    if (!result?.artifacts.logHtml) return null;
-    const blob = new Blob([result.artifacts.logHtml], { type: 'text/html' });
-    return URL.createObjectURL(blob);
-  }, [result]);
+  const blobs = useMemo<{ log: string | null; report: string | null; outputXml: string | null }>(
+    () => ({
+      log: result?.artifacts.logHtml
+        ? URL.createObjectURL(new Blob([result.artifacts.logHtml], { type: 'text/html' }))
+        : null,
+      report: result?.artifacts.reportHtml
+        ? URL.createObjectURL(new Blob([result.artifacts.reportHtml], { type: 'text/html' }))
+        : null,
+      outputXml: result?.artifacts.outputXml
+        ? URL.createObjectURL(
+            new Blob([result.artifacts.outputXml], { type: 'application/xml' }),
+          )
+        : null,
+    }),
+    [result],
+  );
 
-  // Revoke the previous blob URL when a new run produces a fresh one,
-  // and on unmount. Effect-based so it actually runs.
+  // Revoke previous blob URLs when a fresh result arrives, and on unmount.
   useEffect(() => {
-    if (previousBlobUrlRef.current && previousBlobUrlRef.current !== logBlobUrl) {
-      URL.revokeObjectURL(previousBlobUrlRef.current);
+    const next = [blobs.log, blobs.report, blobs.outputXml].filter(
+      (u): u is string => u !== null,
+    );
+    for (const url of previousBlobsRef.current) {
+      if (!next.includes(url)) URL.revokeObjectURL(url);
     }
-    previousBlobUrlRef.current = logBlobUrl;
+    previousBlobsRef.current = next;
     return () => {
-      if (previousBlobUrlRef.current) {
-        URL.revokeObjectURL(previousBlobUrlRef.current);
-        previousBlobUrlRef.current = null;
-      }
+      for (const url of previousBlobsRef.current) URL.revokeObjectURL(url);
+      previousBlobsRef.current = [];
     };
-  }, [logBlobUrl]);
+  }, [blobs]);
 
   const onRun = useCallback(async () => {
     setResult(null);
     setShowLog(false);
+    setShowReport(false);
     const r = await run({ [fileName]: code });
     setResult(r);
   }, [code, fileName, run]);
@@ -72,7 +85,10 @@ export function RunnableRobot({
     setCode(initialCode);
     setResult(null);
     setShowLog(false);
+    setShowReport(false);
   }, [initialCode]);
+
+  const stem = fileName.replace(/\.robot$/, '');
 
   const busy = status === 'loading' || status === 'running';
 
@@ -156,38 +172,77 @@ export function RunnableRobot({
             </div>
           ) : null}
 
-          {logBlobUrl ? (
+          {blobs.log || blobs.report || blobs.outputXml ? (
             <div className="lernkit-runnable-robot__artifacts">
-              <button
-                type="button"
-                className="lernkit-runnable-robot__toggle-log"
-                onClick={() => setShowLog((v) => !v)}
-              >
-                {showLog ? 'Hide log.html' : 'Show log.html'}
-              </button>
-              <a
-                className="lernkit-runnable-robot__download-log"
-                href={logBlobUrl}
-                download={`${fileName.replace(/\.robot$/, '')}-log.html`}
-              >
-                Download log.html
-              </a>
-              {showLog ? (
-                /*
-                 * `allow-scripts` lets RF's inline JS render the report;
-                 * `allow-same-origin` keeps the iframe at the parent's blob origin
-                 * so RF's sessionStorage-backed UI state (collapsed-suite memory,
-                 * keyword expansion state, etc.) actually works. Browsers throw
-                 * `SecurityError` on `sessionStorage` access from opaque-origin
-                 * sandboxed iframes, which RF surfaces as a degraded render.
-                 * For our case the iframe content is RF-generated (we ship the
-                 * wheel) — same trust level as the rest of the package — so the
-                 * standard "avoid combining these tokens" caveat doesn't apply.
-                 */
+              {blobs.log ? (
+                <>
+                  <button
+                    type="button"
+                    className="lernkit-runnable-robot__toggle-log"
+                    onClick={() => setShowLog((v) => !v)}
+                  >
+                    {showLog ? 'Hide log.html' : 'Show log.html'}
+                  </button>
+                  <a
+                    className="lernkit-runnable-robot__download-log"
+                    href={blobs.log}
+                    download={`${stem}-log.html`}
+                  >
+                    Download log.html
+                  </a>
+                </>
+              ) : null}
+              {blobs.report ? (
+                <>
+                  <button
+                    type="button"
+                    className="lernkit-runnable-robot__toggle-report"
+                    onClick={() => setShowReport((v) => !v)}
+                  >
+                    {showReport ? 'Hide report.html' : 'Show report.html'}
+                  </button>
+                  <a
+                    className="lernkit-runnable-robot__download-report"
+                    href={blobs.report}
+                    download={`${stem}-report.html`}
+                  >
+                    Download report.html
+                  </a>
+                </>
+              ) : null}
+              {blobs.outputXml ? (
+                <a
+                  className="lernkit-runnable-robot__download-xml"
+                  href={blobs.outputXml}
+                  download={`${stem}-output.xml`}
+                >
+                  Download output.xml
+                </a>
+              ) : null}
+              {/*
+               * `allow-scripts` lets RF's inline JS render the report;
+               * `allow-same-origin` keeps the iframe at the parent's blob origin
+               * so RF's sessionStorage-backed UI state (collapsed-suite memory,
+               * keyword expansion, navigation between suites in report.html,
+               * etc.) actually works. Browsers throw `SecurityError` on
+               * `sessionStorage` access from opaque-origin sandboxed iframes,
+               * which RF surfaces as a degraded render. The iframe content is
+               * RF-generated (we ship the wheel) — same trust level as the
+               * rest of the package.
+               */}
+              {showLog && blobs.log ? (
                 <iframe
-                  src={logBlobUrl}
+                  src={blobs.log}
                   title="Robot Framework log.html"
                   className="lernkit-runnable-robot__log-frame"
+                  sandbox="allow-scripts allow-same-origin"
+                />
+              ) : null}
+              {showReport && blobs.report ? (
+                <iframe
+                  src={blobs.report}
+                  title="Robot Framework report.html"
+                  className="lernkit-runnable-robot__report-frame"
                   sandbox="allow-scripts allow-same-origin"
                 />
               ) : null}

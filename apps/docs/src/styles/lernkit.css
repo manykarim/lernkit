@@ -168,7 +168,10 @@
 }
 
 .lernkit-runnable-robot__toggle-log,
-.lernkit-runnable-robot__download-log {
+.lernkit-runnable-robot__toggle-report,
+.lernkit-runnable-robot__download-log,
+.lernkit-runnable-robot__download-report,
+.lernkit-runnable-robot__download-xml {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
@@ -185,18 +188,25 @@
 }
 
 .lernkit-runnable-robot__toggle-log:hover,
-.lernkit-runnable-robot__download-log:hover {
+.lernkit-runnable-robot__toggle-report:hover,
+.lernkit-runnable-robot__download-log:hover,
+.lernkit-runnable-robot__download-report:hover,
+.lernkit-runnable-robot__download-xml:hover {
   background: var(--sl-color-bg-nav, rgba(0, 0, 0, 0.04));
   border-color: var(--sl-color-text-secondary, var(--sl-color-gray-3, #666));
 }
 
 .lernkit-runnable-robot__toggle-log:focus-visible,
-.lernkit-runnable-robot__download-log:focus-visible {
+.lernkit-runnable-robot__toggle-report:focus-visible,
+.lernkit-runnable-robot__download-log:focus-visible,
+.lernkit-runnable-robot__download-report:focus-visible,
+.lernkit-runnable-robot__download-xml:focus-visible {
   outline: 2px solid var(--sl-color-accent, #4a86e8);
   outline-offset: 2px;
 }
 
-.lernkit-runnable-robot__log-frame {
+.lernkit-runnable-robot__log-frame,
+.lernkit-runnable-robot__report-frame {
   flex: 1 1 100%;
   width: 100%;
   min-height: 24em;
