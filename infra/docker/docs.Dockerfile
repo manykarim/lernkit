@@ -11,8 +11,10 @@ WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* .npmrc* /app/
 COPY turbo.json tsconfig.base.json /app/
 COPY apps/docs/package.json /app/apps/docs/
-COPY packages/tracker/package.json /app/packages/tracker/
+COPY packages/components/package.json /app/packages/components/
 COPY packages/config/package.json /app/packages/config/
+COPY packages/packagers/package.json /app/packages/packagers/
+COPY packages/tracker/package.json /app/packages/tracker/
 
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile=false
