@@ -38,6 +38,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # apps/docs imports the dist/ outputs of these workspace packages;
+      # without this step astro check fails to resolve them. apps/website
+      # uses TypeDoc against source so it doesn't need the same priming.
+      - name: Build workspace deps for the docs app
+        run: pnpm --filter="@lernkit/components" --filter="@lernkit/tracker" --filter="@lernkit/packagers" build
+
       # Flavor 2 first: produce the SCORM 1.2 SCO with bundled Pyodide so
       # runnable cells work offline, then unzip it next to the mock-LMS
       # wrapper. The SCORM build needs root-relative URLs (LERNKIT_BASE
