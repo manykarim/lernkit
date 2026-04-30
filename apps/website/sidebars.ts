@@ -15,7 +15,18 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: '🛠️ Authoring',
-      items: ['authoring/index'],
+      collapsed: false,
+      items: [
+        'authoring/index',
+        'authoring/course-structure',
+        'authoring/mdx',
+        'authoring/quizzes',
+        'authoring/runnable-python',
+        'authoring/runnable-robot',
+        'authoring/code-blocks',
+        'authoring/tables-callouts-images',
+        'authoring/navigation',
+      ],
     },
     {
       type: 'category',
