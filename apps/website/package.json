@@ -35,9 +35,9 @@
     "@docusaurus/types": "3.10.1",
     "@types/react": "^18.0.0",
     "docusaurus-plugin-typedoc": "1.4.2",
-    "typedoc": "0.28.16",
-    "typedoc-plugin-markdown": "4.9.0",
-    "typescript": "5.7.2"
+    "typedoc": "0.28.19",
+    "typedoc-plugin-markdown": "4.11.0",
+    "typescript": "6.0.3"
   },
   "browserslist": {
     "production": [">0.5%", "not dead", "not op_mini all"],
