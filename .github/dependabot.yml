@@ -13,6 +13,10 @@ updates:
         update-types:
           - patch
           - minor
+    ignore:
+      # Astro majors require a manual migration pass — opt back in by hand.
+      - dependency-name: "astro"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directory: "/apps/api"
@@ -24,8 +28,18 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
 
   - package-ecosystem: docker
     directory: "/infra/docker"
     schedule:
       interval: weekly
+    groups:
+      docker:
+        patterns: ["*"]
+    ignore:
+      # Stay on Node LTS — major bumps land manually.
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
