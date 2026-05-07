@@ -3,7 +3,7 @@
 # Uses uv (https://docs.astral.sh/uv/) for fast, reproducible Python installs.
 # Multi-stage: builder installs deps into a venv, runtime copies the venv only.
 
-FROM python:3.13-slim AS builder
+FROM python:3.14-slim AS builder
 
 # uv installer
 COPY --from=ghcr.io/astral-sh/uv:0.5.10 /uv /uvx /bin/
@@ -31,7 +31,7 @@ COPY apps/api/pyproject.toml /app/pyproject.toml
 
 
 # --- runtime stage ---
-FROM python:3.13-slim AS runtime
+FROM python:3.14-slim AS runtime
 
 # Create non-root user
 RUN groupadd --system --gid 1001 lernkit && \
