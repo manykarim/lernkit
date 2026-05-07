@@ -17,11 +17,26 @@ updates:
       # Astro majors require a manual migration pass — opt back in by hand.
       - dependency-name: "astro"
         update-types: ["version-update:semver-major"]
-      # Starlight is pre-1.0 and treats minors as breaking. 0.38 dropped a
-      # symbol that's not in any released astro@5, so it's effectively
-      # waiting on Astro 6 — pin until we land that migration.
+      # Starlight is pre-1.0 and treats minors as breaking. 0.33 changed
+      # the integration config schema (social block etc.) and 0.38 dropped
+      # symbols not yet in any released astro@5. Pin until migration.
       - dependency-name: "@astrojs/starlight"
-        versions: [">=0.38.0"]
+        versions: [">=0.33.0"]
+      # Docusaurus (apps/website) requires React 18; a react/react-dom
+      # 18→19 bump there would break the website build. Ignore majors;
+      # apps/docs pins specific versions and is unaffected by the range.
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react-dom"
+        update-types: ["version-update:semver-major"]
+      # @astrojs/react 5.x is gated on Astro 6; defer alongside the astro
+      # major ignore above.
+      - dependency-name: "@astrojs/react"
+        update-types: ["version-update:semver-major"]
       # Tooling majors with config-schema or runtime breaks; bump manually.
       - dependency-name: "@biomejs/biome"
         update-types: ["version-update:semver-major"]
