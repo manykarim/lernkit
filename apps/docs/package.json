@@ -23,23 +23,23 @@
     "build:scorm12:rf-training:with-runtime": "pnpm build && pnpm package:scorm12:rf-training:with-runtime"
   },
   "dependencies": {
-    "@astrojs/check": "0.9.4",
-    "@astrojs/react": "4.3.1",
-    "@astrojs/starlight": "0.30.6",
-    "@codemirror/autocomplete": "^6.18.4",
+    "@astrojs/check": "0.9.9",
+    "@astrojs/react": "4.4.2",
+    "@astrojs/starlight": "0.32.6",
+    "@codemirror/autocomplete": "^6.20.2",
     "@codemirror/commands": "^6.7.1",
     "@codemirror/language": "^6.10.6",
     "@codemirror/legacy-modes": "^6.4.2",
     "@codemirror/state": "^6.5.0",
-    "@codemirror/view": "^6.36.1",
+    "@codemirror/view": "^6.42.1",
     "@lernkit/components": "workspace:*",
     "@lernkit/tracker": "workspace:*",
-    "astro": "5.1.1",
+    "astro": "5.18.1",
     "comlink": "^4.4.2",
-    "pyodide": "^0.29.3",
+    "pyodide": "^0.29.4",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "sharp": "0.33.5"
+    "sharp": "0.34.5"
   },
   "devDependencies": {
     "@lernkit/config": "workspace:*",
