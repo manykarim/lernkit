@@ -37,14 +37,14 @@
     "astro": "5.1.1",
     "comlink": "^4.4.2",
     "pyodide": "^0.29.3",
-    "react": "19.0.0",
+    "react": "19.2.6",
     "react-dom": "19.0.0",
     "sharp": "0.33.5"
   },
   "devDependencies": {
     "@lernkit/config": "workspace:*",
     "@lernkit/packagers": "workspace:*",
-    "@types/react": "19.0.1",
+    "@types/react": "19.2.14",
     "@types/react-dom": "19.0.2",
     "typescript": "5.9.3"
   }
