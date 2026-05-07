@@ -17,6 +17,22 @@ updates:
       # Astro majors require a manual migration pass — opt back in by hand.
       - dependency-name: "astro"
         update-types: ["version-update:semver-major"]
+      # Starlight is pre-1.0 and treats minors as breaking. 0.38 dropped a
+      # symbol that's not in any released astro@5, so it's effectively
+      # waiting on Astro 6 — pin until we land that migration.
+      - dependency-name: "@astrojs/starlight"
+        versions: [">=0.38.0"]
+      # Tooling majors with config-schema or runtime breaks; bump manually.
+      - dependency-name: "@biomejs/biome"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "happy-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directory: "/apps/api"
