@@ -38,14 +38,14 @@
     "comlink": "^4.4.2",
     "pyodide": "^0.29.3",
     "react": "19.0.0",
-    "react-dom": "19.0.0",
+    "react-dom": "19.2.6",
     "sharp": "0.33.5"
   },
   "devDependencies": {
     "@lernkit/config": "workspace:*",
     "@lernkit/packagers": "workspace:*",
     "@types/react": "19.0.1",
-    "@types/react-dom": "19.0.2",
+    "@types/react-dom": "19.2.3",
     "typescript": "5.7.2"
   }
 }

@@ -50,10 +50,10 @@
     "@lernkit/tracker": "workspace:*",
     "@testing-library/react": "16.1.0",
     "@types/react": "19.0.1",
-    "@types/react-dom": "19.0.2",
+    "@types/react-dom": "19.2.3",
     "happy-dom": "15.11.6",
     "react": "19.0.0",
-    "react-dom": "19.0.0",
+    "react-dom": "19.2.6",
     "typescript": "5.7.2",
     "vitest": "2.1.8"
   }
